@@ -20,6 +20,10 @@ export type Deal = {
   sourceUrl: string;
   verified: boolean;
   notes: string;
+  verifiedAt?: string;
+  expiresAt?: string;
+  traits?: string[];
+  confidence?: string;
   meals: Meal[];
   macros?: Macros;
 };
@@ -2156,9 +2160,16 @@ export const deals: Deal[] = [
     "price": "Varies",
     "cuisine": "Delivery",
     "category": "Delivery App",
-    "sourceUrl": "https://www.doordash.com",
+    "sourceUrl": "https://help.doordash.com/en-us/merchants/article/happy-hour-discount-on-doordash",
     "verified": true,
-    "notes": "Daily 2-5pm local. Check Deals tab in app.",
+    "notes": "DoorDash supports Happy Hour promos; exact LA restaurants are app/location personalized. Check the app around 2-5pm.",
+    "verifiedAt": "2026-05-27",
+    "traits": [
+      "open now",
+      "solo meal",
+      "under $10"
+    ],
+    "confidence": "check app",
     "meals": [
       "breakfast",
       "lunch",
@@ -2191,7 +2202,14 @@ export const deals: Deal[] = [
     "category": "Delivery App",
     "sourceUrl": "https://www.doordash.com/store/wingstop",
     "verified": true,
-    "notes": "Valid through 6/27/2026. Pickup only.",
+    "notes": "Pickup only. Valid through 6/27/2026 per current listing.",
+    "verifiedAt": "2026-05-27",
+    "expiresAt": "2026-06-27",
+    "traits": [
+      "cheap protein",
+      "solo meal"
+    ],
+    "confidence": "confirmed",
     "meals": [
       "breakfast",
       "lunch",
@@ -2217,14 +2235,21 @@ export const deals: Deal[] = [
     ],
     "restaurant": "DoorDash Deals Tab",
     "neighborhood": "App (anywhere LA)",
-    "deal": "Restaurant-specific BOGOs and free items rotate daily (Popeyes 3pc tenders BOGO recurring)",
+    "deal": "Restaurant-specific BOGOs and free items rotate daily",
     "timeWindow": "All day",
     "price": "Free with $15+ orders",
     "cuisine": "Delivery",
     "category": "Delivery App",
     "sourceUrl": "https://www.doordash.com/en/near-me/category/bogo-deals",
     "verified": true,
-    "notes": "Open app → Deals tab. Local + personalized. Refresh daily.",
+    "notes": "Open app → Deals tab. Local + personalized. Screenshot strong finds and add them as real rows.",
+    "verifiedAt": "2026-05-27",
+    "traits": [
+      "open now",
+      "solo meal",
+      "under $10"
+    ],
+    "confidence": "check app",
     "meals": [
       "breakfast",
       "lunch",
@@ -2257,7 +2282,14 @@ export const deals: Deal[] = [
     "category": "Delivery App",
     "sourceUrl": "https://www.ubereats.com/promo",
     "verified": true,
-    "notes": "Open app → Account → Promotions. Refreshes weekly.",
+    "notes": "Open app → Account → Promotions. Refreshes weekly and varies by account/address.",
+    "verifiedAt": "2026-05-27",
+    "traits": [
+      "open now",
+      "solo meal",
+      "under $10"
+    ],
+    "confidence": "check app",
     "meals": [
       "breakfast",
       "lunch",
@@ -2288,9 +2320,15 @@ export const deals: Deal[] = [
     "price": "First order only",
     "cuisine": "Delivery",
     "category": "Delivery App",
-    "sourceUrl": "https://www.ubereats.com/promo",
+    "sourceUrl": "https://www.joinhoney.com/shop/uber-eats-eater",
     "verified": true,
-    "notes": "May 2026 code. Check current code in Account → Promotions.",
+    "notes": "May 2026 code seen on Honey. Check current code in Account → Promotions before ordering.",
+    "verifiedAt": "2026-05-27",
+    "expiresAt": "2026-05-31",
+    "traits": [
+      "solo meal"
+    ],
+    "confidence": "check app",
     "meals": [
       "breakfast",
       "lunch",
@@ -2321,9 +2359,15 @@ export const deals: Deal[] = [
     "price": "First order only",
     "cuisine": "Delivery",
     "category": "Delivery App",
-    "sourceUrl": "https://www.doordash.com",
+    "sourceUrl": "https://www.couponpac.com/coupon/638672/",
     "verified": true,
-    "notes": "New customer only. Use a fresh email if needed.",
+    "notes": "Coupon site lists DASH30NOW for new users. Verify at checkout before counting it.",
+    "verifiedAt": "2026-05-27",
+    "expiresAt": "2026-11-05",
+    "traits": [
+      "solo meal"
+    ],
+    "confidence": "check app",
     "meals": [
       "breakfast",
       "lunch",

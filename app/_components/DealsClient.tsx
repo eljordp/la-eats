@@ -44,6 +44,31 @@ const GEO_STORAGE_KEY = "la-eats:user-coords";
 
 type UserCoords = { lat: number; lng: number };
 type Mode = "out" | "lazy";
+type SortMode = "best" | "price" | "distance";
+type QuickFilter =
+  | "all"
+  | "cheap_protein"
+  | "under_10"
+  | "open_now"
+  | "solo"
+  | "date"
+  | "late_night";
+
+const SORTS: { key: SortMode; label: string }[] = [
+  { key: "best", label: "Best today" },
+  { key: "price", label: "Cheapest" },
+  { key: "distance", label: "Near me" },
+];
+
+const QUICK_FILTERS: { key: QuickFilter; label: string }[] = [
+  { key: "all", label: "All" },
+  { key: "cheap_protein", label: "Cheap protein" },
+  { key: "under_10", label: "Under $10" },
+  { key: "open_now", label: "Open now" },
+  { key: "solo", label: "Solo meal" },
+  { key: "date", label: "Date spot" },
+  { key: "late_night", label: "Late night" },
+];
 
 function todayShortDay(): string {
   const map = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -72,6 +97,19 @@ function formatOneTimeDate(iso: string): string {
   return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
+function daysFromToday(iso: string): number {
+  const [y, m, d] = iso.split("-").map((n) => parseInt(n, 10));
+  const target = new Date(y, m - 1, d);
+  const today = new Date();
+  target.setHours(0, 0, 0, 0);
+  today.setHours(0, 0, 0, 0);
+  return Math.round((target.getTime() - today.getTime()) / 86400000);
+}
+
+function isExpired(deal: Deal): boolean {
+  return deal.expiresAt ? daysFromToday(deal.expiresAt) < 0 : false;
+}
+
 function priceValue(p: string): number {
   if (!p) return 99;
   const lower = p.toLowerCase().trim();
@@ -83,6 +121,95 @@ function priceValue(p: string): number {
   if (lower === "$$") return 20;
   if (lower === "$$$") return 40;
   return 99;
+}
+
+function dealText(deal: Deal): string {
+  return `${deal.restaurant} ${deal.cuisine} ${deal.category} ${deal.deal} ${deal.notes} ${
+    deal.traits?.join(" ") ?? ""
+  }`.toLowerCase();
+}
+
+function hasTrait(deal: Deal, trait: string): boolean {
+  return (deal.traits ?? []).some((t) => t.toLowerCase() === trait);
+}
+
+function isUnderTen(deal: Deal): boolean {
+  return priceValue(deal.price) <= 10 || hasTrait(deal, "under $10");
+}
+
+function isCheapProtein(deal: Deal): boolean {
+  return (
+    hasTrait(deal, "cheap protein") ||
+    (priceValue(deal.price) <= 15 &&
+      /wing|chicken|burger|taco|pho|bbq|sushi|shabu|oyster|protein|carne|steak|kbbq/.test(dealText(deal)))
+  );
+}
+
+function isSoloMeal(deal: Deal): boolean {
+  return (
+    hasTrait(deal, "solo meal") ||
+    /chain|combo|lunch|taco|burger|pho|delivery|first order|sandwich|wings/.test(dealText(deal))
+  );
+}
+
+function isDateSpot(deal: Deal): boolean {
+  return (
+    hasTrait(deal, "date spot") ||
+    /wine|cocktail|french|steak|sushi|rooftop|prix fixe|voucher|brunch|italian|oyster|date/.test(dealText(deal))
+  );
+}
+
+function passesQuickFilter(deal: Deal, filter: QuickFilter): boolean {
+  if (filter === "all") return true;
+  if (filter === "cheap_protein") return isCheapProtein(deal);
+  if (filter === "under_10") return isUnderTen(deal);
+  if (filter === "open_now") return isActiveNow(deal.timeWindow);
+  if (filter === "solo") return isSoloMeal(deal);
+  if (filter === "date") return isDateSpot(deal);
+  if (filter === "late_night") return deal.meals.includes("late_night");
+  return true;
+}
+
+function bestValueScore(deal: Deal, miles: number | null, mode: Mode): number {
+  const price = priceValue(deal.price);
+  let score = 48;
+
+  if (price <= 1) score += 24;
+  else if (price <= 5) score += 20;
+  else if (price <= 10) score += 16;
+  else if (price <= 15) score += 10;
+  else if (price <= 25) score += 4;
+  else if (price >= 999) score -= mode === "lazy" ? 2 : 10;
+
+  if (isActiveNow(deal.timeWindow)) score += 10;
+  else score -= 5;
+  if (isCheapProtein(deal)) score += 8;
+  if (isUnderTen(deal)) score += 5;
+  if (isSoloMeal(deal)) score += 3;
+  if (deal.confidence === "confirmed") score += 6;
+  if (deal.confidence === "check app") score += mode === "lazy" ? 1 : -2;
+  if (deal.verifiedAt) {
+    const age = -daysFromToday(deal.verifiedAt);
+    if (age <= 14) score += 4;
+    else if (age > 45) score -= 7;
+  } else {
+    score -= 2;
+  }
+  if (mode === "out" && miles != null) {
+    if (miles <= 2) score += 12;
+    else if (miles <= 5) score += 8;
+    else if (miles <= 10) score += 4;
+    else if (miles > 15) score -= 8;
+  }
+
+  return Math.max(1, Math.min(99, Math.round(score)));
+}
+
+function mapsUrl(deal: Deal): string | null {
+  if (LAZY_CATEGORIES.has(deal.category) || deal.neighborhood.startsWith("App")) return null;
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+    `${deal.restaurant} ${deal.neighborhood} Los Angeles`
+  )}`;
 }
 
 type Props = {
@@ -98,6 +225,8 @@ export default function DealsClient({ allDeals }: Props) {
   const [query, setQuery] = useState<string>("");
   const [dateLabel, setDateLabel] = useState<string>("");
   const [mode, setMode] = useState<Mode>("out");
+  const [sortMode, setSortMode] = useState<SortMode>("best");
+  const [quickFilter, setQuickFilter] = useState<QuickFilter>("all");
   const [coords, setCoords] = useState<UserCoords | null>(null);
   const [geoStatus, setGeoStatus] = useState<"idle" | "pending" | "granted" | "denied">("idle");
 
@@ -108,8 +237,9 @@ export default function DealsClient({ allDeals }: Props) {
   const [fitsToday, setFitsToday] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
 
-  // Hydrate day/meal/date + try geolocation.
+  // Hydrate day/meal/date + restore cached location.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setDay(todayShortDay());
     setMeal(currentMeal());
     setDateLabel(todayLongString());
@@ -133,7 +263,10 @@ export default function DealsClient({ allDeals }: Props) {
     } catch {
       // ignore
     }
+    setGeoStatus("idle");
+  }, []);
 
+  function requestLocation() {
     if (typeof navigator !== "undefined" && navigator.geolocation) {
       setGeoStatus("pending");
       navigator.geolocation.getCurrentPosition(
@@ -152,8 +285,10 @@ export default function DealsClient({ allDeals }: Props) {
         },
         { enableHighAccuracy: false, timeout: 8000, maximumAge: 600000 }
       );
+    } else {
+      setGeoStatus("denied");
     }
-  }, []);
+  }
 
   function resetLocation() {
     setCoords(null);
@@ -167,6 +302,7 @@ export default function DealsClient({ allDeals }: Props) {
 
   // Hydrate macros from localStorage after mount.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setTargets(loadTargets());
     setConsumed(loadConsumed());
   }, []);
@@ -219,12 +355,13 @@ export default function DealsClient({ allDeals }: Props) {
   const categories = useMemo(() => {
     const set = new Set<string>();
     for (const d of allDeals) {
-      // Hide lazy categories from the dropdown — they're toggled via mode.
-      if (LAZY_CATEGORIES.has(d.category)) continue;
+      const isLazyCat = LAZY_CATEGORIES.has(d.category);
+      if (mode === "lazy" && !isLazyCat) continue;
+      if (mode === "out" && isLazyCat) continue;
       set.add(d.category);
     }
     return ["All", ...[...set].sort((a, b) => a.localeCompare(b))];
-  }, [allDeals]);
+  }, [allDeals, mode]);
 
   // Base filter (before "fits today" macro filter).
   const baseFiltered = useMemo(() => {
@@ -235,17 +372,19 @@ export default function DealsClient({ allDeals }: Props) {
       if (mode === "lazy" && !isLazyCat) return false;
       if (mode === "out" && isLazyCat) return false;
 
+      if (isExpired(d)) return false;
       if (!d.days.includes(day)) return false;
       if (meal !== "all" && !d.meals.includes(meal)) return false;
       if (neighborhood !== "All" && d.neighborhood !== neighborhood) return false;
       if (category !== "All" && d.category !== category) return false;
+      if (!passesQuickFilter(d, quickFilter)) return false;
       if (q) {
-        const hay = `${d.restaurant} ${d.cuisine} ${d.deal} ${d.neighborhood}`.toLowerCase();
+        const hay = `${dealText(d)} ${d.neighborhood}`.toLowerCase();
         if (!hay.includes(q)) return false;
       }
       return true;
     });
-  }, [allDeals, day, meal, neighborhood, category, query, mode]);
+  }, [allDeals, day, meal, neighborhood, category, query, mode, quickFilter]);
 
   const remaining = useMemo(() => {
     if (!targets) return null;
@@ -277,14 +416,14 @@ export default function DealsClient({ allDeals }: Props) {
     return map;
   }, [filtered, coords]);
 
-  const smartSortActive = !!coords && mode === "out";
+  const distanceSortActive = !!coords && mode === "out";
 
   const sorted = useMemo(() => {
-    if (smartSortActive) {
+    if (sortMode === "distance" && distanceSortActive) {
       return [...filtered].sort((a, b) => {
-        const ascore = compositeScore(a, distancesById.get(a.id) ?? null);
-        const bscore = compositeScore(b, distancesById.get(b.id) ?? null);
-        if (ascore !== bscore) return ascore - bscore;
+        const ad = distancesById.get(a.id) ?? 999;
+        const bd = distancesById.get(b.id) ?? 999;
+        if (ad !== bd) return ad - bd;
         const pa = priceValue(a.price);
         const pb = priceValue(b.price);
         if (pa !== pb) return pa - pb;
@@ -292,8 +431,7 @@ export default function DealsClient({ allDeals }: Props) {
       });
     }
 
-    if (mode === "lazy") {
-      // Sort by active-now first, then cheapest.
+    if (sortMode === "price") {
       return [...filtered].sort((a, b) => {
         const aa = isActiveNow(a.timeWindow) ? 0 : 1;
         const bb = isActiveNow(b.timeWindow) ? 0 : 1;
@@ -305,8 +443,13 @@ export default function DealsClient({ allDeals }: Props) {
       });
     }
 
-    // Default fallback (no location, going out): existing cheap-first.
     return [...filtered].sort((a, b) => {
+      const ascore = bestValueScore(a, distancesById.get(a.id) ?? null, mode);
+      const bscore = bestValueScore(b, distancesById.get(b.id) ?? null, mode);
+      if (ascore !== bscore) return bscore - ascore;
+      const aa = isActiveNow(a.timeWindow) ? 0 : 1;
+      const bb = isActiveNow(b.timeWindow) ? 0 : 1;
+      if (aa !== bb) return aa - bb;
       const pa = priceValue(a.price);
       const pb = priceValue(b.price);
       if (pa !== pb) return pa - pb;
@@ -314,27 +457,27 @@ export default function DealsClient({ allDeals }: Props) {
       if (!a.oneTimeDate && b.oneTimeDate) return 1;
       return a.restaurant.localeCompare(b.restaurant);
     });
-  }, [filtered, smartSortActive, distancesById, mode]);
+  }, [filtered, sortMode, distanceSortActive, distancesById, mode]);
 
   return (
     <>
       {/* Header */}
-      <header className="px-5 sm:px-8 lg:px-12 pt-10 sm:pt-14 pb-6">
+      <header className="px-5 sm:px-8 lg:px-12 pt-7 sm:pt-9 pb-4">
         <div className="mx-auto max-w-3xl">
           <div className="flex items-center justify-between text-2xs uppercase tracking-[0.18em] text-[var(--color-muted)]">
             <span>Los Angeles · Volume 01</span>
             <span suppressHydrationWarning>{dateLabel || " "}</span>
           </div>
-          <h1 className="font-serif mt-4 text-5xl sm:text-6xl lg:text-7xl leading-[0.95] tracking-tight text-[var(--color-ink)]">
+          <h1 className="font-serif mt-3 text-5xl sm:text-6xl leading-[0.95] tracking-tight text-[var(--color-ink)]">
             LA Eats
           </h1>
-          <p className="mt-3 text-[15px] sm:text-base text-[var(--color-ink-2)] max-w-xl leading-relaxed">
-            LA&rsquo;s best food deals, sorted by day and meal. Pick a day,
-            pick a meal, decide where to go.
+          <p className="mt-2 text-[14px] sm:text-[15px] text-[var(--color-ink-2)] max-w-xl leading-relaxed">
+            Today&rsquo;s best food deals, ranked by value, timing, distance, and
+            whether the promo needs a quick app check.
           </p>
 
           {hydrated && (
-            <div className="mt-5 flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
               {targets ? (
                 <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 text-2xs uppercase tracking-[0.18em] text-[var(--color-muted)]">
                   <span className="font-serif italic normal-case tracking-normal text-[15px] text-[var(--color-ink-2)]">
@@ -372,7 +515,7 @@ export default function DealsClient({ allDeals }: Props) {
             </div>
           )}
 
-          <div className="mt-6 h-px w-full bg-[var(--color-rule)]" />
+          <div className="mt-4 h-px w-full bg-[var(--color-rule)]" />
         </div>
       </header>
 
@@ -381,11 +524,17 @@ export default function DealsClient({ allDeals }: Props) {
         <div className="mx-auto max-w-3xl py-3 sm:py-4 flex flex-col gap-3">
           {/* Mode toggle */}
           <div className="flex items-center justify-between gap-3">
-            <ModeToggle mode={mode} onChange={setMode} />
-            {smartSortActive && (
+            <ModeToggle
+              mode={mode}
+              onChange={(nextMode) => {
+                setMode(nextMode);
+                setCategory("All");
+              }}
+            />
+            {distanceSortActive && (
               <span className="hidden sm:inline-flex items-center gap-2 text-2xs uppercase tracking-[0.18em] text-[var(--color-muted)]">
                 <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-clay)]" />
-                Sorted for you
+                distance ready
                 <button
                   type="button"
                   onClick={resetLocation}
@@ -397,10 +546,10 @@ export default function DealsClient({ allDeals }: Props) {
             )}
           </div>
 
-          {smartSortActive && (
+          {distanceSortActive ? (
             <div className="sm:hidden flex items-center gap-2 text-2xs uppercase tracking-[0.18em] text-[var(--color-muted)]">
               <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-clay)]" />
-              Sorted for you
+              distance ready
               <button
                 type="button"
                 onClick={resetLocation}
@@ -409,7 +558,15 @@ export default function DealsClient({ allDeals }: Props) {
                 reset location
               </button>
             </div>
-          )}
+          ) : mode === "out" ? (
+            <button
+              type="button"
+              onClick={requestLocation}
+              className="sm:hidden self-start text-2xs uppercase tracking-[0.18em] text-[var(--color-clay)] underline decoration-[var(--color-clay)]/30 underline-offset-2"
+            >
+              use location
+            </button>
+          ) : null}
 
           {/* Day chips */}
           <div className="flex items-center gap-2 overflow-x-auto no-scrollbar -mx-1 px-1">
@@ -476,6 +633,68 @@ export default function DealsClient({ allDeals }: Props) {
                 Fits today
               </button>
             </div>
+          </div>
+
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar -mx-1 px-1">
+            {SORTS.map((s) => {
+              const active = s.key === sortMode;
+              const disabled = s.key === "distance" && !distanceSortActive;
+              return (
+                <button
+                  key={s.key}
+                  type="button"
+                  disabled={disabled}
+                  onClick={() => {
+                    if (s.key === "distance" && !distanceSortActive) {
+                      requestLocation();
+                      return;
+                    }
+                    setSortMode(s.key);
+                  }}
+                  aria-pressed={active}
+                  className={[
+                    "shrink-0 rounded-full px-3 py-1.5 text-[11px] uppercase tracking-[0.16em] transition border",
+                    active
+                      ? "bg-[var(--color-ink)] text-[var(--color-paper)] border-[var(--color-ink)]"
+                      : "border-[var(--color-rule)] text-[var(--color-ink-2)] hover:border-[var(--color-ink)]",
+                    disabled ? "opacity-60" : "",
+                  ].join(" ")}
+                >
+                  {s.label}
+                </button>
+              );
+            })}
+            {!distanceSortActive && mode === "out" && (
+              <button
+                type="button"
+                onClick={requestLocation}
+                className="hidden sm:inline-flex shrink-0 rounded-full border border-[var(--color-rule)] px-3 py-1.5 text-[11px] uppercase tracking-[0.16em] text-[var(--color-clay)] hover:border-[var(--color-clay)]"
+              >
+                use location
+              </button>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar -mx-1 px-1">
+            {QUICK_FILTERS.map((f) => {
+              const active = f.key === quickFilter;
+              return (
+                <button
+                  key={f.key}
+                  type="button"
+                  onClick={() => setQuickFilter(f.key)}
+                  aria-pressed={active}
+                  className={[
+                    "shrink-0 rounded-full px-3 py-1.5 text-[11px] uppercase tracking-[0.15em] transition border",
+                    active
+                      ? "border-[var(--color-clay)] text-[var(--color-clay)] bg-[var(--color-paper-2)]"
+                      : "border-[var(--color-rule)] text-[var(--color-muted)] hover:text-[var(--color-ink-2)]",
+                  ].join(" ")}
+                >
+                  {f.label}
+                </button>
+              );
+            })}
           </div>
 
           {/* Secondary filters */}
@@ -558,7 +777,8 @@ export default function DealsClient({ allDeals }: Props) {
                   deal={d}
                   miles={distancesById.get(d.id) ?? null}
                   showDistance={mode === "out" && !!coords}
-                  isRecommended={smartSortActive && idx === 0}
+                  isRecommended={sortMode === "best" && idx === 0}
+                  valueScore={bestValueScore(d, distancesById.get(d.id) ?? null, mode)}
                   onEat={handleEatDeal}
                 />
               ))}
@@ -571,7 +791,7 @@ export default function DealsClient({ allDeals }: Props) {
       <footer className="border-t border-[var(--color-rule)] px-5 sm:px-8 lg:px-12 py-8 mt-4">
         <div className="mx-auto max-w-3xl flex flex-wrap items-center justify-between gap-3 text-2xs uppercase tracking-[0.18em] text-[var(--color-muted)]">
           <span>LA Eats · A field guide</span>
-          <span>{allDeals.length} verified deals</span>
+          <span>{allDeals.length} tracked deals</span>
         </div>
       </footer>
 
@@ -611,13 +831,6 @@ function ProgressBar({ value, target }: { value: number; target: number }) {
       />
     </div>
   );
-}
-
-function compositeScore(deal: Deal, miles: number | null): number {
-  const price = priceValue(deal.price);
-  const dist = miles ?? 5; // chain/app or unknown -> treat as ~5 mi
-  const active = isActiveNow(deal.timeWindow) ? 0 : 4;
-  return price + dist * 2 + active;
 }
 
 function ModeToggle({
@@ -670,20 +883,27 @@ function DealCard({
   miles,
   showDistance,
   isRecommended,
+  valueScore,
   onEat,
 }: {
   deal: Deal;
   miles: number | null;
   showDistance: boolean;
   isRecommended: boolean;
+  valueScore: number;
   onEat: (deal: Deal) => void;
 }) {
   const milesLabel =
     showDistance && miles != null ? `${miles.toFixed(1)} mi` : null;
+  const mapHref = mapsUrl(deal);
+  const expiresSoon =
+    deal.expiresAt && daysFromToday(deal.expiresAt) >= 0 && daysFromToday(deal.expiresAt) <= 7;
+  const stale =
+    deal.verifiedAt && -daysFromToday(deal.verifiedAt) > 45;
 
   return (
     <li className="py-6 first:pt-2">
-      <article className="grid grid-cols-[auto_1fr_auto] gap-x-4 gap-y-2">
+      <article className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2">
         <div className="pt-1">
           <RestaurantAvatar restaurant={deal.restaurant} size={52} />
         </div>
@@ -692,7 +912,7 @@ function DealCard({
           <div className="mb-2 flex flex-wrap items-center gap-2">
             {isRecommended && (
               <span className="inline-flex items-center gap-2 rounded-full border border-[var(--color-clay)] px-2.5 py-1 text-[10px] uppercase tracking-[0.22em] text-[var(--color-clay)]">
-                Recommended
+                Best today · {valueScore}
               </span>
             )}
             {deal.oneTimeDate && (
@@ -701,20 +921,37 @@ function DealCard({
                 One day only · {formatOneTimeDate(deal.oneTimeDate)}
               </span>
             )}
+            {expiresSoon && deal.expiresAt && (
+              <span className="inline-flex items-center rounded-full border border-[var(--color-clay)] px-2.5 py-1 text-[10px] uppercase tracking-[0.18em] text-[var(--color-clay)]">
+                ends {formatOneTimeDate(deal.expiresAt)}
+              </span>
+            )}
           </div>
 
-          <h3 className="font-serif text-[22px] sm:text-[26px] leading-tight text-[var(--color-ink)]">
-            {deal.restaurant}
-          </h3>
-          <p className="mt-0.5 text-[13px] text-[var(--color-muted)]">
-            {deal.neighborhood}
-            {milesLabel && (
-              <>
-                <span className="mx-1.5 text-[var(--color-rule)]">·</span>
-                <span className="text-[var(--color-ink-2)]">{milesLabel}</span>
-              </>
-            )}
-          </p>
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <h3 className="font-serif text-[22px] sm:text-[26px] leading-tight text-[var(--color-ink)]">
+                {deal.restaurant}
+              </h3>
+              <p className="mt-0.5 text-[13px] text-[var(--color-muted)]">
+                {deal.neighborhood}
+                {milesLabel && (
+                  <>
+                    <span className="mx-1.5 text-[var(--color-rule)]">·</span>
+                    <span className="text-[var(--color-ink-2)]">{milesLabel}</span>
+                  </>
+                )}
+              </p>
+            </div>
+            <div className="shrink-0 text-right max-w-[8rem]">
+              <span className="block font-serif text-[21px] sm:text-[24px] leading-none text-[var(--color-ink)] break-words">
+                {deal.price || "—"}
+              </span>
+              <span className="mt-1 block text-[10px] uppercase tracking-[0.2em] text-[var(--color-muted)]">
+                price
+              </span>
+            </div>
+          </div>
 
           <p className="mt-3 text-[15px] leading-relaxed text-[var(--color-ink-2)]">
             {deal.deal}
@@ -738,6 +975,16 @@ function DealCard({
             {!deal.verified && (
               <span className="inline-flex items-center rounded-full border border-[var(--color-rule)] px-2 py-0.5 text-[11px] uppercase tracking-[0.14em] text-[var(--color-muted)]">
                 unverified
+              </span>
+            )}
+            {deal.confidence === "check app" && (
+              <span className="inline-flex items-center rounded-full border border-[var(--color-rule)] px-2 py-0.5 text-[11px] uppercase tracking-[0.14em] text-[var(--color-muted)]">
+                check app
+              </span>
+            )}
+            {deal.verifiedAt && (
+              <span className="inline-flex items-center rounded-full border border-[var(--color-rule)] px-2 py-0.5 text-[11px] uppercase tracking-[0.14em] text-[var(--color-muted)]">
+                {stale ? "stale" : "verified"} {formatOneTimeDate(deal.verifiedAt)}
               </span>
             )}
           </div>
@@ -770,18 +1017,16 @@ function DealCard({
             ) : deal.sourceUrl ? (
               <span className="text-[var(--color-muted)]">{deal.sourceUrl}</span>
             ) : null}
-          </div>
-        </div>
-
-        {/* Price tile */}
-        <div className="text-right">
-          <div className="inline-flex flex-col items-end">
-            <span className="font-serif text-[22px] sm:text-[24px] leading-none text-[var(--color-ink)]">
-              {deal.price || "—"}
-            </span>
-            <span className="mt-1 text-[10px] uppercase tracking-[0.2em] text-[var(--color-muted)]">
-              price
-            </span>
+            {mapHref && (
+              <a
+                href={mapHref}
+                target="_blank"
+                rel="noreferrer noopener"
+                className="text-[var(--color-clay)] underline decoration-[var(--color-clay)]/30 underline-offset-2 hover:decoration-[var(--color-clay)]"
+              >
+                map
+              </a>
+            )}
           </div>
         </div>
       </article>

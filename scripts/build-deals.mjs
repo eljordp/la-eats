@@ -168,7 +168,6 @@ function normalizeDays(dayCell) {
   // Specific date e.g. "Thursday May 28"
   const oneTimeMatch = raw.match(/^(Mon|Tues|Wednes|Thurs|Fri|Satur|Sun)day\s+([A-Za-z]+)\s+(\d{1,2})$/i);
   if (oneTimeMatch) {
-    const dayName = oneTimeMatch[1].toLowerCase() + (oneTimeMatch[1].toLowerCase().endsWith("s") ? "day" : "day");
     // Easier: just take the leading word
     const head = raw.split(/\s+/)[0].toLowerCase();
     const short = DAY_MAP[head];
@@ -203,7 +202,6 @@ function inferMeals(deal) {
   const tw = (deal.Time_Window || "").toLowerCase();
   const cat = (deal.Category || "").toLowerCase();
   const restaurant = (deal.Restaurant || "").toLowerCase();
-  const dealText = (deal.Deal || "").toLowerCase();
   const set = new Set();
 
   // Delivery apps: always-on across all meals
@@ -328,6 +326,10 @@ const deals = rows.map((r, i) => {
   const { days, oneTimeDate } = normalizeDays(obj.Day);
   const meals = inferMeals(obj);
   const macros = macrosFor(obj.Restaurant, obj.Cuisine);
+  const traits = (obj.Traits || "")
+    .split("|")
+    .map((t) => t.trim())
+    .filter(Boolean);
   if (
     !restaurantOverrides[obj.Restaurant] &&
     !cuisineMacros[obj.Cuisine] &&
@@ -347,19 +349,16 @@ const deals = rows.map((r, i) => {
     price: obj.Price,
     cuisine: obj.Cuisine,
     category: obj.Category,
-	    sourceUrl: obj.Source_URL,
-	    verified: (obj.Verified || "").toLowerCase() === "yes",
-	    notes: obj.Notes,
-	    verifiedAt: obj.Last_Verified || undefined,
-	    expiresAt: obj.Expires || undefined,
-	    traits: (obj.Traits || "")
-	      .split("|")
-	      .map((t) => t.trim())
-	      .filter(Boolean),
-	    confidence: obj.Confidence || undefined,
-	    meals,
-	    macros,
-	  };
+    sourceUrl: obj.Source_URL,
+    verified: (obj.Verified || "").toLowerCase() === "yes",
+    notes: obj.Notes,
+    verifiedAt: obj.Last_Verified || undefined,
+    expiresAt: obj.Expires || undefined,
+    traits: traits.length ? traits : undefined,
+    confidence: obj.Confidence || undefined,
+    meals,
+    macros,
+  };
 });
 
 // Sanity stats
@@ -407,16 +406,16 @@ export type Deal = {
   price: string;
   cuisine: string;
   category: string;
-	  sourceUrl: string;
-	  verified: boolean;
-	  notes: string;
-	  verifiedAt?: string;
-	  expiresAt?: string;
-	  traits: string[];
-	  confidence?: string;
-	  meals: Meal[];
-	  macros?: Macros;
-	};
+  sourceUrl: string;
+  verified: boolean;
+  notes: string;
+  verifiedAt?: string;
+  expiresAt?: string;
+  traits?: string[];
+  confidence?: string;
+  meals: Meal[];
+  macros?: Macros;
+};
 
 export const deals: Deal[] = ${JSON.stringify(deals, null, 2)};
 
