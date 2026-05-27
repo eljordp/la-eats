@@ -102,9 +102,24 @@ export default function DealsClient({ allDeals }: Props) {
     });
   }, [allDeals, day, meal, neighborhood, category, query]);
 
-  // Sort: one-time first, then by price-ish heuristic (deals with explicit $ first), then alpha
+  // Sort: cheapest first. Parse Price into a number; push "Varies"/"Cashback"/no-clear-price to the bottom.
   const sorted = useMemo(() => {
+    function priceValue(p: string): number {
+      if (!p) return 99;
+      const lower = p.toLowerCase().trim();
+      if (lower.includes("varies") || lower.includes("cashback") || lower.includes("first order")) return 999;
+      if (lower.includes("sandwich price")) return 15;
+      const match = p.match(/\$\s?(\d+(?:\.\d+)?)/);
+      if (match) return parseFloat(match[1]);
+      if (lower === "$") return 8;
+      if (lower === "$$") return 20;
+      if (lower === "$$$") return 40;
+      return 99;
+    }
     return [...filtered].sort((a, b) => {
+      const pa = priceValue(a.price);
+      const pb = priceValue(b.price);
+      if (pa !== pb) return pa - pb;
       if (a.oneTimeDate && !b.oneTimeDate) return -1;
       if (!a.oneTimeDate && b.oneTimeDate) return 1;
       return a.restaurant.localeCompare(b.restaurant);
