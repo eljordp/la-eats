@@ -1959,6 +1959,138 @@ export const deals: Deal[] = [
       "Sat",
       "Sun"
     ],
+    "restaurant": "Groupon LA Food & Drink",
+    "neighborhood": "App (LA-wide)",
+    "deal": "Pre-pay vouchers up to 70% off LA restaurants (dine-in)",
+    "timeWindow": "All day",
+    "price": "Varies (e.g. $20 for $40 food)",
+    "cuisine": "Vouchers",
+    "category": "Voucher App",
+    "sourceUrl": "https://www.groupon.com/local/los-angeles/food-and-drink",
+    "verified": true,
+    "notes": "Best for date-night sit-down spots. Stack with in-app deals.",
+    "meals": [
+      "lunch",
+      "dinner"
+    ]
+  },
+  {
+    "id": 90,
+    "day": "Daily",
+    "days": [
+      "Mon",
+      "Tue",
+      "Wed",
+      "Thu",
+      "Fri",
+      "Sat",
+      "Sun"
+    ],
+    "restaurant": "Groupon+ cashback",
+    "neighborhood": "App (LA-wide)",
+    "deal": "Link card → automatic % back at participating LA spots (no voucher needed)",
+    "timeWindow": "All day",
+    "price": "Cashback only",
+    "cuisine": "Vouchers",
+    "category": "Voucher App",
+    "sourceUrl": "https://www.groupon.com/local/los-angeles/restaurants",
+    "verified": true,
+    "notes": "No printout needed. Pays back to your linked card.",
+    "meals": [
+      "lunch",
+      "dinner"
+    ]
+  },
+  {
+    "id": 91,
+    "day": "Daily",
+    "days": [
+      "Mon",
+      "Tue",
+      "Wed",
+      "Thu",
+      "Fri",
+      "Sat",
+      "Sun"
+    ],
+    "restaurant": "Groupon Restaurants K-Town",
+    "neighborhood": "K-Town",
+    "deal": "Rotating 30-70% off voucher deals (sushi / KBBQ / Korean fried chicken)",
+    "timeWindow": "Varies by spot",
+    "price": "$10-30 vouchers",
+    "cuisine": "Vouchers",
+    "category": "Voucher App",
+    "sourceUrl": "https://www.groupon.com/local/los-angeles/restaurants",
+    "verified": true,
+    "notes": "Check before booking K-Town spots. Frequently discounted.",
+    "meals": [
+      "dinner"
+    ]
+  },
+  {
+    "id": 92,
+    "day": "Daily",
+    "days": [
+      "Mon",
+      "Tue",
+      "Wed",
+      "Thu",
+      "Fri",
+      "Sat",
+      "Sun"
+    ],
+    "restaurant": "Groupon Restaurants Santa Monica",
+    "neighborhood": "Santa Monica",
+    "deal": "Rotating happy hour & dinner vouchers at SM restaurants",
+    "timeWindow": "Varies by spot",
+    "price": "$15-40 vouchers",
+    "cuisine": "Vouchers",
+    "category": "Voucher App",
+    "sourceUrl": "https://www.groupon.com/local/los-angeles/restaurants",
+    "verified": true,
+    "notes": "Beach-area sit-downs cycle frequently.",
+    "meals": [
+      "dinner"
+    ]
+  },
+  {
+    "id": 93,
+    "day": "Daily",
+    "days": [
+      "Mon",
+      "Tue",
+      "Wed",
+      "Thu",
+      "Fri",
+      "Sat",
+      "Sun"
+    ],
+    "restaurant": "Groupon Restaurants DTLA",
+    "neighborhood": "DTLA",
+    "deal": "Rotating downtown restaurant vouchers + brunch deals",
+    "timeWindow": "Varies by spot",
+    "price": "$15-35 vouchers",
+    "cuisine": "Vouchers",
+    "category": "Voucher App",
+    "sourceUrl": "https://www.groupon.com/local/los-angeles/downtown-los/food-and-drink",
+    "verified": true,
+    "notes": "Downtown spots run dinner + brunch vouchers.",
+    "meals": [
+      "dinner"
+    ]
+  },
+  {
+    "id": 94,
+    "day": "Daily",
+    "days": [
+      "Mon",
+      "Tue",
+      "Wed",
+      "Thu",
+      "Fri",
+      "Sat",
+      "Sun"
+    ],
     "restaurant": "EMC Seafood and Raw Bar",
     "neighborhood": "K-Town",
     "deal": "$1.50 oysters, $5 house wine, $5 draft",
@@ -1974,7 +2106,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 90,
+    "id": 95,
     "day": "Daily",
     "days": [
       "Mon",
@@ -2000,7 +2132,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 91,
+    "id": 96,
     "day": "Daily",
     "days": [
       "Mon",
@@ -2026,7 +2158,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 92,
+    "id": 97,
     "day": "Daily",
     "days": [
       "Mon",
@@ -2052,7 +2184,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 93,
+    "id": 98,
     "day": "Daily",
     "days": [
       "Mon",
@@ -2078,7 +2210,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 94,
+    "id": 99,
     "day": "Daily",
     "days": [
       "Mon",
@@ -2104,7 +2236,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 95,
+    "id": 100,
     "day": "Daily",
     "days": [
       "Mon",
@@ -2130,7 +2262,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 96,
+    "id": 101,
     "day": "Daily",
     "days": [
       "Mon",
@@ -2156,7 +2288,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 97,
+    "id": 102,
     "day": "Daily",
     "days": [
       "Mon",
@@ -2182,7 +2314,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 98,
+    "id": 103,
     "day": "Daily",
     "days": [
       "Mon",
@@ -2208,7 +2340,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 99,
+    "id": 104,
     "day": "Daily",
     "days": [
       "Mon",
@@ -2234,7 +2366,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 100,
+    "id": 105,
     "day": "Daily",
     "days": [
       "Mon",
@@ -2260,7 +2392,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 101,
+    "id": 106,
     "day": "Daily",
     "days": [
       "Mon",
@@ -2287,7 +2419,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 102,
+    "id": 107,
     "day": "Daily",
     "days": [
       "Mon",
@@ -2313,7 +2445,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 103,
+    "id": 108,
     "day": "Daily",
     "days": [
       "Mon",
@@ -2340,7 +2472,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 104,
+    "id": 109,
     "day": "Daily",
     "days": [
       "Mon",
@@ -2366,7 +2498,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 105,
+    "id": 110,
     "day": "Daily",
     "days": [
       "Mon",
@@ -2392,7 +2524,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 106,
+    "id": 111,
     "day": "Daily",
     "days": [
       "Mon",
@@ -2418,7 +2550,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 107,
+    "id": 112,
     "day": "Daily",
     "days": [
       "Mon",
@@ -2446,7 +2578,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 108,
+    "id": 113,
     "day": "Daily",
     "days": [
       "Mon",
@@ -2472,7 +2604,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 109,
+    "id": 114,
     "day": "Daily",
     "days": [
       "Mon",
@@ -2498,7 +2630,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 110,
+    "id": 115,
     "day": "Daily",
     "days": [
       "Mon",
@@ -2524,7 +2656,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 111,
+    "id": 116,
     "day": "Daily",
     "days": [
       "Mon",
@@ -2551,7 +2683,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 112,
+    "id": 117,
     "day": "Daily",
     "days": [
       "Mon",
@@ -2577,7 +2709,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 113,
+    "id": 118,
     "day": "Daily",
     "days": [
       "Mon",
@@ -2603,7 +2735,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 114,
+    "id": 119,
     "day": "Daily",
     "days": [
       "Mon",
@@ -2629,7 +2761,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 115,
+    "id": 120,
     "day": "Daily",
     "days": [
       "Mon",
@@ -2655,7 +2787,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 116,
+    "id": 121,
     "day": "Daily",
     "days": [
       "Mon",
@@ -2682,7 +2814,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 117,
+    "id": 122,
     "day": "Daily",
     "days": [
       "Mon",
@@ -2708,7 +2840,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 118,
+    "id": 123,
     "day": "Weekdays",
     "days": [
       "Mon",
@@ -2732,7 +2864,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 119,
+    "id": 124,
     "day": "Weekdays",
     "days": [
       "Mon",
@@ -2756,7 +2888,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 120,
+    "id": 125,
     "day": "Weekdays",
     "days": [
       "Mon",
@@ -2781,7 +2913,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 121,
+    "id": 126,
     "day": "Weekdays",
     "days": [
       "Mon",
@@ -2805,7 +2937,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 122,
+    "id": 127,
     "day": "Weekdays",
     "days": [
       "Mon",
@@ -2829,7 +2961,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 123,
+    "id": 128,
     "day": "Weekdays",
     "days": [
       "Mon",
@@ -2853,7 +2985,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 124,
+    "id": 129,
     "day": "Weekdays",
     "days": [
       "Mon",
@@ -2878,7 +3010,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 125,
+    "id": 130,
     "day": "Weekdays",
     "days": [
       "Mon",
@@ -2902,7 +3034,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 126,
+    "id": 131,
     "day": "Weekdays",
     "days": [
       "Mon",
@@ -2927,7 +3059,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 127,
+    "id": 132,
     "day": "Weekdays",
     "days": [
       "Mon",
@@ -2951,7 +3083,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 128,
+    "id": 133,
     "day": "Weekdays",
     "days": [
       "Mon",
@@ -2975,7 +3107,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 129,
+    "id": 134,
     "day": "Weekdays",
     "days": [
       "Mon",
@@ -2999,7 +3131,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 130,
+    "id": 135,
     "day": "Weekdays",
     "days": [
       "Mon",
@@ -3023,7 +3155,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 131,
+    "id": 136,
     "day": "Weekdays",
     "days": [
       "Mon",
@@ -3047,7 +3179,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 132,
+    "id": 137,
     "day": "Weekdays",
     "days": [
       "Mon",
@@ -3073,7 +3205,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 133,
+    "id": 138,
     "day": "Weekdays",
     "days": [
       "Mon",
@@ -3097,7 +3229,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 134,
+    "id": 139,
     "day": "Weekdays",
     "days": [
       "Mon",
@@ -3121,7 +3253,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 135,
+    "id": 140,
     "day": "Weekdays",
     "days": [
       "Mon",
@@ -3147,7 +3279,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 136,
+    "id": 141,
     "day": "Weekdays",
     "days": [
       "Mon",
@@ -3171,7 +3303,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 137,
+    "id": 142,
     "day": "Weekdays",
     "days": [
       "Mon",
@@ -3195,7 +3327,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 138,
+    "id": 143,
     "day": "Weekdays",
     "days": [
       "Mon",
@@ -3219,7 +3351,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 139,
+    "id": 144,
     "day": "Weekdays",
     "days": [
       "Mon",
@@ -3243,7 +3375,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 140,
+    "id": 145,
     "day": "Weekends",
     "days": [
       "Sat",
@@ -3264,7 +3396,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 141,
+    "id": 146,
     "day": "Weekends",
     "days": [
       "Sat",
@@ -3285,7 +3417,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 142,
+    "id": 147,
     "day": "Weekends",
     "days": [
       "Sat",
@@ -3306,7 +3438,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 143,
+    "id": 148,
     "day": "Weekends",
     "days": [
       "Sat",
