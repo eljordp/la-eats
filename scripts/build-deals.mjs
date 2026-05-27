@@ -10,6 +10,96 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const CSV_PATH = "/Users/jp/la-food-deals.csv";
 const OUT_PATH = resolve(__dirname, "../data/deals.ts");
 
+// Inline copies of the macro maps (keep this script as a plain .mjs without
+// pulling .ts source). Mirror data/macros.ts — update both together.
+const restaurantOverrides = {
+  "Red Robin": { cal: 1100, protein: 53 },
+  "Chili's": { cal: 1300, protein: 55 },
+  "Checkers/Rally's": { cal: 620, protein: 26 },
+  "In-N-Out Protein Style": { cal: 520, protein: 33 },
+  "Tom's Jr Burger": { cal: 1200, protein: 50 },
+  "Sugarfish": { cal: 700, protein: 35 },
+  "Bonchon": { cal: 1200, protein: 80 },
+  "Cassell's": { cal: 950, protein: 45 },
+  "The Press Burger Joint": { cal: 850, protein: 35 },
+  "Uncle Stevey's Bagels": { cal: 600, protein: 25 },
+  "Kozo Sushi": { cal: 250, protein: 8 },
+};
+
+const cuisineMacros = {
+  "Mexican": { cal: 450, protein: 22 },
+  "Vietnamese": { cal: 550, protein: 32 },
+  "Sushi": { cal: 600, protein: 28 },
+  "Japanese Hot Pot": { cal: 900, protein: 60 },
+  "Korean Wings": { cal: 1100, protein: 75 },
+  "American": { cal: 800, protein: 35 },
+  "American/Bar": { cal: 700, protein: 30 },
+  "Burgers": { cal: 900, protein: 40 },
+  "Burgers/Chicken": { cal: 950, protein: 45 },
+  "Pizza": { cal: 700, protein: 28 },
+  "Pizza/Pub": { cal: 700, protein: 28 },
+  "Italian": { cal: 750, protein: 28 },
+  "Italian/Pizza": { cal: 700, protein: 28 },
+  "Italian/Wine": { cal: 550, protein: 22 },
+  "Italian Tapas": { cal: 500, protein: 22 },
+  "Italian/Cocktail": { cal: 550, protein: 22 },
+  "French": { cal: 700, protein: 30 },
+  "French/Hotel": { cal: 600, protein: 25 },
+  "French/Rooftop": { cal: 600, protein: 25 },
+  "French Rooftop": { cal: 600, protein: 25 },
+  "French Dip/Bar": { cal: 850, protein: 45 },
+  "Seafood": { cal: 550, protein: 35 },
+  "Seafood/Bar": { cal: 550, protein: 35 },
+  "Steakhouse": { cal: 1100, protein: 65 },
+  "Thai": { cal: 700, protein: 30 },
+  "Caribbean": { cal: 800, protein: 35 },
+  "Vegan": { cal: 600, protein: 25 },
+  "Vegan Mexican": { cal: 550, protein: 22 },
+  "Bagels/Breakfast": { cal: 550, protein: 22 },
+  "Oaxacan": { cal: 600, protein: 28 },
+  "BBQ": { cal: 1000, protein: 60 },
+  "BBQ/Bar": { cal: 900, protein: 50 },
+  "BBQ/Filipino": { cal: 1000, protein: 55 },
+  "Modern American": { cal: 700, protein: 30 },
+  "New American": { cal: 700, protein: 30 },
+  "Asian Fusion": { cal: 700, protein: 32 },
+  "Asian/Bar": { cal: 700, protein: 32 },
+  "Bar/Asian": { cal: 700, protein: 32 },
+  "Bar Food": { cal: 800, protein: 32 },
+  "Bar": { cal: 600, protein: 22 },
+  "Bar/American": { cal: 700, protein: 30 },
+  "Cocktail Bar": { cal: 400, protein: 12 },
+  "Whiskey Bar": { cal: 400, protein: 12 },
+  "Wine Bar": { cal: 400, protein: 12 },
+  "Tiki/Bar": { cal: 500, protein: 15 },
+  "Mexican/Bar": { cal: 500, protein: 22 },
+  "Tex-Mex": { cal: 700, protein: 28 },
+  "Mezcal Bar": { cal: 400, protein: 12 },
+  "Beer Hall": { cal: 600, protein: 22 },
+  "Wings": { cal: 1100, protein: 75 },
+  "Colombian/Korean": { cal: 700, protein: 32 },
+  "Sports Bar": { cal: 800, protein: 32 },
+  "Pub": { cal: 700, protein: 30 },
+  "Pub/British": { cal: 700, protein: 30 },
+  "Irish Pub": { cal: 700, protein: 30 },
+  "New Orleans": { cal: 800, protein: 32 },
+  "Japanese": { cal: 600, protein: 30 },
+  "Japanese/Izakaya": { cal: 700, protein: 32 },
+  "German": { cal: 1000, protein: 50 },
+  "Sushi/Drinks": { cal: 250, protein: 8 },
+  "Vouchers": { cal: 700, protein: 30 },
+  "Delivery": { cal: 800, protein: 35 },
+  "Brazilian": { cal: 1000, protein: 60 },
+};
+
+const DEFAULT_MACROS = { cal: 600, protein: 25 };
+
+function macrosFor(restaurant, cuisine) {
+  if (restaurantOverrides[restaurant]) return { ...restaurantOverrides[restaurant] };
+  if (cuisineMacros[cuisine]) return { ...cuisineMacros[cuisine] };
+  return { ...DEFAULT_MACROS };
+}
+
 // Minimal CSV parser supporting quoted fields and commas inside quotes.
 function parseCSV(text) {
   const rows = [];
@@ -230,11 +320,21 @@ function inferMeals(deal) {
   return order.filter((m) => set.has(m));
 }
 
+const missingMacros = new Set();
+
 const deals = rows.map((r, i) => {
   const obj = {};
   for (const k of Object.keys(idx)) obj[k] = (r[idx[k]] || "").trim();
   const { days, oneTimeDate } = normalizeDays(obj.Day);
   const meals = inferMeals(obj);
+  const macros = macrosFor(obj.Restaurant, obj.Cuisine);
+  if (
+    !restaurantOverrides[obj.Restaurant] &&
+    !cuisineMacros[obj.Cuisine] &&
+    obj.Cuisine
+  ) {
+    missingMacros.add(obj.Cuisine);
+  }
   return {
     id: i + 1,
     day: obj.Day,
@@ -247,11 +347,19 @@ const deals = rows.map((r, i) => {
     price: obj.Price,
     cuisine: obj.Cuisine,
     category: obj.Category,
-    sourceUrl: obj.Source_URL,
-    verified: (obj.Verified || "").toLowerCase() === "yes",
-    notes: obj.Notes,
-    meals,
-  };
+	    sourceUrl: obj.Source_URL,
+	    verified: (obj.Verified || "").toLowerCase() === "yes",
+	    notes: obj.Notes,
+	    verifiedAt: obj.Last_Verified || undefined,
+	    expiresAt: obj.Expires || undefined,
+	    traits: (obj.Traits || "")
+	      .split("|")
+	      .map((t) => t.trim())
+	      .filter(Boolean),
+	    confidence: obj.Confidence || undefined,
+	    meals,
+	    macros,
+	  };
 });
 
 // Sanity stats
@@ -271,6 +379,12 @@ console.error("Meals:", mealCounts);
 console.error("Days:", dayCounts);
 console.error("Neighborhoods:", nbhdSet.size);
 console.error("Categories:", [...categorySet].sort().join(", "));
+if (missingMacros.size) {
+  console.error(
+    "Cuisines without macro mapping (using default):",
+    [...missingMacros].sort().join(", ")
+  );
+}
 
 const banner = `// AUTO-GENERATED. Do not edit by hand.
 // Regenerate with: node scripts/build-deals.mjs
@@ -278,6 +392,8 @@ const banner = `// AUTO-GENERATED. Do not edit by hand.
 
 const ts = `${banner}
 export type Meal = "breakfast" | "lunch" | "dinner" | "late_night";
+
+export type Macros = { cal: number; protein: number };
 
 export type Deal = {
   id: number;
@@ -291,11 +407,16 @@ export type Deal = {
   price: string;
   cuisine: string;
   category: string;
-  sourceUrl: string;
-  verified: boolean;
-  notes: string;
-  meals: Meal[];
-};
+	  sourceUrl: string;
+	  verified: boolean;
+	  notes: string;
+	  verifiedAt?: string;
+	  expiresAt?: string;
+	  traits: string[];
+	  confidence?: string;
+	  meals: Meal[];
+	  macros?: Macros;
+	};
 
 export const deals: Deal[] = ${JSON.stringify(deals, null, 2)};
 

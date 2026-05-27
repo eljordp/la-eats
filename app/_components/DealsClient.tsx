@@ -1,10 +1,20 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Deal, Meal } from "@/data/deals";
 import { milesToNeighborhood } from "@/lib/distance";
 import { isActiveNow } from "@/lib/active";
 import RestaurantAvatar from "./RestaurantAvatar";
+import MacroTargetsEditor, {
+  DEFAULT_TARGETS,
+  type Consumed,
+  type Targets,
+  loadConsumed,
+  loadTargets,
+  resetConsumedToday,
+  saveConsumed,
+  saveTargets,
+} from "./MacroTargets";
 
 const DAY_LONG: Record<string, string> = {
   Mon: "Monday",
@@ -91,6 +101,13 @@ export default function DealsClient({ allDeals }: Props) {
   const [coords, setCoords] = useState<UserCoords | null>(null);
   const [geoStatus, setGeoStatus] = useState<"idle" | "pending" | "granted" | "denied">("idle");
 
+  // Macros state
+  const [targets, setTargets] = useState<Targets | null>(null);
+  const [consumed, setConsumed] = useState<Consumed>({ cal: 0, protein: 0 });
+  const [targetsOpen, setTargetsOpen] = useState(false);
+  const [fitsToday, setFitsToday] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
+
   // Hydrate day/meal/date + try geolocation.
   useEffect(() => {
     setDay(todayShortDay());
@@ -148,6 +165,51 @@ export default function DealsClient({ allDeals }: Props) {
     }
   }
 
+  // Hydrate macros from localStorage after mount.
+  useEffect(() => {
+    setTargets(loadTargets());
+    setConsumed(loadConsumed());
+  }, []);
+
+  // Show a transient toast.
+  useEffect(() => {
+    if (!toast) return;
+    const t = window.setTimeout(() => setToast(null), 1800);
+    return () => window.clearTimeout(t);
+  }, [toast]);
+
+  const handleSaveTargets = useCallback((t: Targets) => {
+    saveTargets(t);
+    setTargets(t);
+  }, []);
+
+  const handleResetToday = useCallback(() => {
+    resetConsumedToday();
+    setConsumed({ cal: 0, protein: 0 });
+  }, []);
+
+  const handleEatDeal = useCallback(
+    (deal: Deal) => {
+      if (!deal.macros) return;
+      const next = {
+        cal: consumed.cal + deal.macros.cal,
+        protein: consumed.protein + deal.macros.protein,
+      };
+      saveConsumed(next);
+      setConsumed(next);
+      setToast(`Added ${deal.macros.cal} cal · ${deal.macros.protein}g`);
+    },
+    [consumed.cal, consumed.protein]
+  );
+
+  function handleFitsTodayClick() {
+    if (!targets) {
+      setTargetsOpen(true);
+      return;
+    }
+    setFitsToday((v) => !v);
+  }
+
   const neighborhoods = useMemo(() => {
     const set = new Set<string>();
     for (const d of allDeals) set.add(d.neighborhood);
@@ -164,7 +226,8 @@ export default function DealsClient({ allDeals }: Props) {
     return ["All", ...[...set].sort((a, b) => a.localeCompare(b))];
   }, [allDeals]);
 
-  const filtered = useMemo(() => {
+  // Base filter (before "fits today" macro filter).
+  const baseFiltered = useMemo(() => {
     const q = query.trim().toLowerCase();
     return allDeals.filter((d) => {
       // Mode filter: Lazy mode shows ONLY delivery/voucher; Going Out hides them.
@@ -183,6 +246,25 @@ export default function DealsClient({ allDeals }: Props) {
       return true;
     });
   }, [allDeals, day, meal, neighborhood, category, query, mode]);
+
+  const remaining = useMemo(() => {
+    if (!targets) return null;
+    return {
+      cal: Math.max(0, targets.cal - consumed.cal),
+      protein: Math.max(0, targets.protein - consumed.protein),
+    };
+  }, [targets, consumed]);
+
+  const filtered = useMemo(() => {
+    if (!fitsToday || !remaining) return baseFiltered;
+    return baseFiltered.filter((d) => {
+      if (!d.macros) return false;
+      return (
+        d.macros.cal <= remaining.cal &&
+        d.macros.protein <= remaining.protein + 30
+      );
+    });
+  }, [baseFiltered, fitsToday, remaining]);
 
   // Per-deal distance (in miles) — only when we have user coords and we're not in lazy mode.
   const distancesById = useMemo(() => {
@@ -250,6 +332,46 @@ export default function DealsClient({ allDeals }: Props) {
             LA&rsquo;s best food deals, sorted by day and meal. Pick a day,
             pick a meal, decide where to go.
           </p>
+
+          {hydrated && (
+            <div className="mt-5 flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+              {targets ? (
+                <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 text-2xs uppercase tracking-[0.18em] text-[var(--color-muted)]">
+                  <span className="font-serif italic normal-case tracking-normal text-[15px] text-[var(--color-ink-2)]">
+                    Today
+                  </span>
+                  <span>
+                    <span className="text-[var(--color-ink)]">{consumed.cal}</span>{" "}
+                    / {targets.cal} cal
+                  </span>
+                  <span className="text-[var(--color-rule)]">·</span>
+                  <span>
+                    <span className="text-[var(--color-ink)]">{consumed.protein}</span>{" "}
+                    / {targets.protein}g protein
+                  </span>
+                </div>
+              ) : (
+                <span className="text-2xs uppercase tracking-[0.18em] text-[var(--color-muted)]">
+                  Set a daily macro target
+                </span>
+              )}
+              <button
+                type="button"
+                onClick={() => setTargetsOpen(true)}
+                className="text-2xs uppercase tracking-[0.18em] text-[var(--color-clay)] underline decoration-[var(--color-clay)]/30 underline-offset-2 hover:decoration-[var(--color-clay)]"
+              >
+                {targets ? "Edit macros" : "Set macros"}
+              </button>
+            </div>
+          )}
+
+          {hydrated && targets && (
+            <div className="mt-3 space-y-1.5">
+              <ProgressBar value={consumed.cal} target={targets.cal} />
+              <ProgressBar value={consumed.protein} target={targets.protein} />
+            </div>
+          )}
+
           <div className="mt-6 h-px w-full bg-[var(--color-rule)]" />
         </div>
       </header>
@@ -313,7 +435,7 @@ export default function DealsClient({ allDeals }: Props) {
             })}
           </div>
 
-          {/* Meal tabs */}
+          {/* Meal tabs + Fits today chip */}
           <div className="flex items-center gap-1 overflow-x-auto no-scrollbar -mx-1 px-1">
             {MEAL_KEYS.map((m) => {
               const active = m === meal;
@@ -334,6 +456,26 @@ export default function DealsClient({ allDeals }: Props) {
                 </button>
               );
             })}
+            <div className="ml-auto pl-2 shrink-0">
+              <button
+                type="button"
+                onClick={handleFitsTodayClick}
+                aria-pressed={fitsToday}
+                className={[
+                  "shrink-0 rounded-full px-3 py-1.5 text-[11px] uppercase tracking-[0.18em] transition border",
+                  fitsToday
+                    ? "bg-[var(--color-ink)] text-[var(--color-paper)] border-[var(--color-ink)]"
+                    : "border-[var(--color-rule)] text-[var(--color-ink-2)] hover:border-[var(--color-ink)]",
+                ].join(" ")}
+                title={
+                  targets
+                    ? "Only show deals that fit today's remaining macros"
+                    : "Set a macro target first"
+                }
+              >
+                Fits today
+              </button>
+            </div>
           </div>
 
           {/* Secondary filters */}
@@ -382,7 +524,7 @@ export default function DealsClient({ allDeals }: Props) {
       {/* Results */}
       <main className="px-5 sm:px-8 lg:px-12 py-6 sm:py-8 flex-1">
         <div className="mx-auto max-w-3xl">
-          <div className="flex items-baseline justify-between mb-5">
+          <div className="flex items-baseline justify-between mb-5 gap-3">
             <h2 className="font-serif text-2xl sm:text-3xl text-[var(--color-ink)]">
               {hydrated ? DAY_LONG[day] : " "}
               {meal !== "all" && (
@@ -392,8 +534,10 @@ export default function DealsClient({ allDeals }: Props) {
                 </span>
               )}
             </h2>
-            <span className="text-2xs uppercase tracking-[0.18em] text-[var(--color-muted)]">
-              {sorted.length} {sorted.length === 1 ? "spot" : "spots"}
+            <span className="text-2xs uppercase tracking-[0.18em] text-[var(--color-muted)] text-right">
+              {fitsToday && targets
+                ? `${sorted.length} of ${baseFiltered.length} fit`
+                : `${sorted.length} ${sorted.length === 1 ? "spot" : "spots"}`}
             </span>
           </div>
 
@@ -415,6 +559,7 @@ export default function DealsClient({ allDeals }: Props) {
                   miles={distancesById.get(d.id) ?? null}
                   showDistance={mode === "out" && !!coords}
                   isRecommended={smartSortActive && idx === 0}
+                  onEat={handleEatDeal}
                 />
               ))}
             </ul>
@@ -432,7 +577,39 @@ export default function DealsClient({ allDeals }: Props) {
 
       {/* Suppress the unused-variable check on geoStatus (kept for future UI). */}
       {geoStatus === "pending" && <span className="sr-only">Locating you…</span>}
+
+      <MacroTargetsEditor
+        open={targetsOpen}
+        onClose={() => setTargetsOpen(false)}
+        initial={targets ?? DEFAULT_TARGETS}
+        onSave={handleSaveTargets}
+        onResetToday={handleResetToday}
+        consumed={consumed}
+      />
+
+      {toast && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="fixed left-1/2 -translate-x-1/2 bottom-6 z-50 rounded-full bg-[var(--color-ink)] text-[var(--color-paper)] px-4 py-2 text-[12px] uppercase tracking-[0.16em] font-serif shadow-lg"
+        >
+          {toast}
+        </div>
+      )}
     </>
+  );
+}
+
+function ProgressBar({ value, target }: { value: number; target: number }) {
+  const pct = target > 0 ? Math.min(100, Math.round((value / target) * 100)) : 0;
+  return (
+    <div className="h-px w-full bg-[var(--color-rule)] relative overflow-hidden">
+      <div
+        className="absolute inset-y-0 left-0 bg-[var(--color-clay)]"
+        style={{ width: `${pct}%` }}
+        aria-hidden
+      />
+    </div>
   );
 }
 
@@ -493,11 +670,13 @@ function DealCard({
   miles,
   showDistance,
   isRecommended,
+  onEat,
 }: {
   deal: Deal;
   miles: number | null;
   showDistance: boolean;
   isRecommended: boolean;
+  onEat: (deal: Deal) => void;
 }) {
   const milesLabel =
     showDistance && miles != null ? `${miles.toFixed(1)} mi` : null;
@@ -545,6 +724,14 @@ function DealCard({
             {deal.timeWindow}
           </p>
 
+          {deal.macros && (
+            <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] uppercase tracking-[0.16em] text-[var(--color-muted)]">
+              <span>~{deal.macros.cal} cal</span>
+              <span className="text-[var(--color-rule)]">·</span>
+              <span>{deal.macros.protein}g protein</span>
+            </div>
+          )}
+
           <div className="mt-3 flex flex-wrap items-center gap-1.5">
             <Tag>{deal.cuisine}</Tag>
             <Tag>{deal.category}</Tag>
@@ -561,11 +748,16 @@ function DealCard({
             </p>
           )}
 
-          <div className="mt-3 flex items-center gap-3 text-[12px]">
-            <span className="text-[var(--color-muted)]/70 lowercase tracking-wide">
-              macros · soon
-            </span>
-            <span className="text-[var(--color-rule)]">|</span>
+          <div className="mt-3 flex items-center flex-wrap gap-x-3 gap-y-2 text-[12px]">
+            {deal.macros && (
+              <button
+                type="button"
+                onClick={() => onEat(deal)}
+                className="rounded-full border border-[var(--color-rule)] px-3 py-1 text-[11px] uppercase tracking-[0.16em] text-[var(--color-ink-2)] hover:border-[var(--color-ink)] hover:text-[var(--color-ink)] transition"
+              >
+                I&rsquo;ll eat this
+              </button>
+            )}
             {deal.sourceUrl && deal.sourceUrl.startsWith("http") ? (
               <a
                 href={deal.sourceUrl}
@@ -575,9 +767,9 @@ function DealCard({
               >
                 details
               </a>
-            ) : (
-              <span className="text-[var(--color-muted)]">{deal.sourceUrl || "—"}</span>
-            )}
+            ) : deal.sourceUrl ? (
+              <span className="text-[var(--color-muted)]">{deal.sourceUrl}</span>
+            ) : null}
           </div>
         </div>
 

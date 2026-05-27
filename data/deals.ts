@@ -3,6 +3,8 @@
 
 export type Meal = "breakfast" | "lunch" | "dinner" | "late_night";
 
+export type Macros = { cal: number; protein: number };
+
 export type Deal = {
   id: number;
   day: string;
@@ -19,6 +21,7 @@ export type Deal = {
   verified: boolean;
   notes: string;
   meals: Meal[];
+  macros?: Macros;
 };
 
 export const deals: Deal[] = [
@@ -41,7 +44,11 @@ export const deals: Deal[] = [
     "meals": [
       "dinner",
       "late_night"
-    ]
+    ],
+    "macros": {
+      "cal": 750,
+      "protein": 28
+    }
   },
   {
     "id": 2,
@@ -61,7 +68,11 @@ export const deals: Deal[] = [
     "notes": "Upscale-spot Mon deal",
     "meals": [
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 550,
+      "protein": 35
+    }
   },
   {
     "id": 3,
@@ -81,7 +92,11 @@ export const deals: Deal[] = [
     "notes": "Monday taco night (not Tue)",
     "meals": [
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 450,
+      "protein": 22
+    }
   },
   {
     "id": 4,
@@ -101,7 +116,11 @@ export const deals: Deal[] = [
     "notes": "All-night Monday",
     "meals": [
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 550,
+      "protein": 35
+    }
   },
   {
     "id": 5,
@@ -121,7 +140,11 @@ export const deals: Deal[] = [
     "notes": "Extended Monday HH",
     "meals": [
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 1000,
+      "protein": 60
+    }
   },
   {
     "id": 6,
@@ -141,7 +164,11 @@ export const deals: Deal[] = [
     "notes": "Super Nacho Hour Mon-Sat",
     "meals": [
       "late_night"
-    ]
+    ],
+    "macros": {
+      "cal": 700,
+      "protein": 28
+    }
   },
   {
     "id": 7,
@@ -162,7 +189,11 @@ export const deals: Deal[] = [
     "meals": [
       "dinner",
       "late_night"
-    ]
+    ],
+    "macros": {
+      "cal": 600,
+      "protein": 22
+    }
   },
   {
     "id": 8,
@@ -183,7 +214,11 @@ export const deals: Deal[] = [
     "meals": [
       "lunch",
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 1200,
+      "protein": 80
+    }
   },
   {
     "id": 9,
@@ -204,7 +239,11 @@ export const deals: Deal[] = [
     "meals": [
       "lunch",
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 1200,
+      "protein": 80
+    }
   },
   {
     "id": 10,
@@ -224,7 +263,11 @@ export const deals: Deal[] = [
     "notes": "Taco Tuesday all-day deal",
     "meals": [
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 450,
+      "protein": 22
+    }
   },
   {
     "id": 11,
@@ -245,7 +288,11 @@ export const deals: Deal[] = [
     "meals": [
       "lunch",
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 450,
+      "protein": 22
+    }
   },
   {
     "id": 12,
@@ -266,7 +313,11 @@ export const deals: Deal[] = [
     "meals": [
       "lunch",
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 450,
+      "protein": 22
+    }
   },
   {
     "id": 13,
@@ -287,7 +338,11 @@ export const deals: Deal[] = [
     "meals": [
       "lunch",
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 450,
+      "protein": 22
+    }
   },
   {
     "id": 14,
@@ -308,7 +363,11 @@ export const deals: Deal[] = [
     "meals": [
       "lunch",
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 450,
+      "protein": 22
+    }
   },
   {
     "id": 15,
@@ -329,7 +388,11 @@ export const deals: Deal[] = [
     "meals": [
       "lunch",
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 450,
+      "protein": 22
+    }
   },
   {
     "id": 16,
@@ -350,7 +413,11 @@ export const deals: Deal[] = [
     "meals": [
       "lunch",
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 450,
+      "protein": 22
+    }
   },
   {
     "id": 17,
@@ -371,7 +438,11 @@ export const deals: Deal[] = [
     "meals": [
       "lunch",
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 450,
+      "protein": 22
+    }
   },
   {
     "id": 18,
@@ -392,7 +463,11 @@ export const deals: Deal[] = [
     "meals": [
       "lunch",
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 450,
+      "protein": 22
+    }
   },
   {
     "id": 19,
@@ -413,7 +488,11 @@ export const deals: Deal[] = [
     "meals": [
       "lunch",
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 450,
+      "protein": 22
+    }
   },
   {
     "id": 20,
@@ -434,7 +513,11 @@ export const deals: Deal[] = [
     "meals": [
       "lunch",
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 450,
+      "protein": 22
+    }
   },
   {
     "id": 21,
@@ -455,7 +538,11 @@ export const deals: Deal[] = [
     "meals": [
       "lunch",
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 450,
+      "protein": 22
+    }
   },
   {
     "id": 22,
@@ -476,7 +563,11 @@ export const deals: Deal[] = [
     "meals": [
       "lunch",
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 450,
+      "protein": 22
+    }
   },
   {
     "id": 23,
@@ -496,7 +587,11 @@ export const deals: Deal[] = [
     "notes": "Multiple locations",
     "meals": [
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 450,
+      "protein": 22
+    }
   },
   {
     "id": 24,
@@ -516,7 +611,11 @@ export const deals: Deal[] = [
     "notes": "Tuesday only",
     "meals": [
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 550,
+      "protein": 35
+    }
   },
   {
     "id": 25,
@@ -537,7 +636,11 @@ export const deals: Deal[] = [
     "meals": [
       "lunch",
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 700,
+      "protein": 30
+    }
   },
   {
     "id": 26,
@@ -558,7 +661,11 @@ export const deals: Deal[] = [
     "meals": [
       "dinner",
       "late_night"
-    ]
+    ],
+    "macros": {
+      "cal": 400,
+      "protein": 12
+    }
   },
   {
     "id": 27,
@@ -579,7 +686,11 @@ export const deals: Deal[] = [
     "meals": [
       "dinner",
       "late_night"
-    ]
+    ],
+    "macros": {
+      "cal": 750,
+      "protein": 28
+    }
   },
   {
     "id": 28,
@@ -599,7 +710,11 @@ export const deals: Deal[] = [
     "notes": "Tuesday margarita night",
     "meals": [
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 600,
+      "protein": 28
+    }
   },
   {
     "id": 29,
@@ -620,7 +735,11 @@ export const deals: Deal[] = [
     "meals": [
       "lunch",
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 1200,
+      "protein": 80
+    }
   },
   {
     "id": 30,
@@ -640,7 +759,11 @@ export const deals: Deal[] = [
     "notes": "Wednesday only",
     "meals": [
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 550,
+      "protein": 35
+    }
   },
   {
     "id": 31,
@@ -660,7 +783,11 @@ export const deals: Deal[] = [
     "notes": "Rooftop vibes",
     "meals": [
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 600,
+      "protein": 25
+    }
   },
   {
     "id": 32,
@@ -681,7 +808,11 @@ export const deals: Deal[] = [
     "meals": [
       "lunch",
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 1000,
+      "protein": 55
+    }
   },
   {
     "id": 33,
@@ -702,7 +833,11 @@ export const deals: Deal[] = [
     "meals": [
       "lunch",
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 800,
+      "protein": 35
+    }
   },
   {
     "id": 34,
@@ -722,7 +857,11 @@ export const deals: Deal[] = [
     "notes": "Each glass $1 less than previous",
     "meals": [
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 550,
+      "protein": 22
+    }
   },
   {
     "id": 35,
@@ -742,7 +881,11 @@ export const deals: Deal[] = [
     "notes": "Wed wine special",
     "meals": [
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 600,
+      "protein": 28
+    }
   },
   {
     "id": 36,
@@ -762,7 +905,11 @@ export const deals: Deal[] = [
     "notes": "Wed/Thu/Fri/Sun",
     "meals": [
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 750,
+      "protein": 28
+    }
   },
   {
     "id": 37,
@@ -782,7 +929,11 @@ export const deals: Deal[] = [
     "notes": "Bar seating only Wed-Fri",
     "meals": [
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 550,
+      "protein": 35
+    }
   },
   {
     "id": 38,
@@ -802,7 +953,11 @@ export const deals: Deal[] = [
     "notes": "Thu-Sun",
     "meals": [
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 550,
+      "protein": 35
+    }
   },
   {
     "id": 39,
@@ -822,7 +977,11 @@ export const deals: Deal[] = [
     "notes": "Late-night Thu only",
     "meals": [
       "late_night"
-    ]
+    ],
+    "macros": {
+      "cal": 550,
+      "protein": 35
+    }
   },
   {
     "id": 40,
@@ -842,7 +1001,11 @@ export const deals: Deal[] = [
     "notes": "Thu-Sun",
     "meals": [
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 700,
+      "protein": 30
+    }
   },
   {
     "id": 41,
@@ -862,7 +1025,11 @@ export const deals: Deal[] = [
     "notes": "Wed-Thu late night",
     "meals": [
       "late_night"
-    ]
+    ],
+    "macros": {
+      "cal": 800,
+      "protein": 35
+    }
   },
   {
     "id": 42,
@@ -883,7 +1050,11 @@ export const deals: Deal[] = [
     "meals": [
       "breakfast",
       "late_night"
-    ]
+    ],
+    "macros": {
+      "cal": 800,
+      "protein": 32
+    }
   },
   {
     "id": 43,
@@ -905,7 +1076,11 @@ export const deals: Deal[] = [
     "meals": [
       "lunch",
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 850,
+      "protein": 35
+    }
   },
   {
     "id": 44,
@@ -926,7 +1101,11 @@ export const deals: Deal[] = [
     "meals": [
       "lunch",
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 450,
+      "protein": 22
+    }
   },
   {
     "id": 45,
@@ -947,7 +1126,11 @@ export const deals: Deal[] = [
     "meals": [
       "lunch",
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 450,
+      "protein": 22
+    }
   },
   {
     "id": 46,
@@ -967,7 +1150,11 @@ export const deals: Deal[] = [
     "notes": "Friday michelada special",
     "meals": [
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 600,
+      "protein": 28
+    }
   },
   {
     "id": 47,
@@ -987,7 +1174,11 @@ export const deals: Deal[] = [
     "notes": "Fri-Sat late",
     "meals": [
       "late_night"
-    ]
+    ],
+    "macros": {
+      "cal": 800,
+      "protein": 35
+    }
   },
   {
     "id": 48,
@@ -1007,7 +1198,11 @@ export const deals: Deal[] = [
     "notes": "Late HH Fri-Sat",
     "meals": [
       "late_night"
-    ]
+    ],
+    "macros": {
+      "cal": 700,
+      "protein": 32
+    }
   },
   {
     "id": 49,
@@ -1027,7 +1222,11 @@ export const deals: Deal[] = [
     "notes": "Iconic barrel bar",
     "meals": [
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 700,
+      "protein": 30
+    }
   },
   {
     "id": 50,
@@ -1047,7 +1246,11 @@ export const deals: Deal[] = [
     "notes": "Fri-Sat late night",
     "meals": [
       "late_night"
-    ]
+    ],
+    "macros": {
+      "cal": 550,
+      "protein": 35
+    }
   },
   {
     "id": 51,
@@ -1067,7 +1270,11 @@ export const deals: Deal[] = [
     "notes": "Fri-Sat late",
     "meals": [
       "late_night"
-    ]
+    ],
+    "macros": {
+      "cal": 900,
+      "protein": 50
+    }
   },
   {
     "id": 52,
@@ -1087,7 +1294,11 @@ export const deals: Deal[] = [
     "notes": "Saturday afternoon",
     "meals": [
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 700,
+      "protein": 32
+    }
   },
   {
     "id": 53,
@@ -1107,7 +1318,11 @@ export const deals: Deal[] = [
     "notes": "Extended Saturday HH",
     "meals": [
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 700,
+      "protein": 30
+    }
   },
   {
     "id": 54,
@@ -1127,7 +1342,11 @@ export const deals: Deal[] = [
     "notes": "Weekend HH later",
     "meals": [
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 700,
+      "protein": 30
+    }
   },
   {
     "id": 55,
@@ -1147,7 +1366,11 @@ export const deals: Deal[] = [
     "notes": "Weekend afternoon",
     "meals": [
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 800,
+      "protein": 35
+    }
   },
   {
     "id": 56,
@@ -1169,7 +1392,11 @@ export const deals: Deal[] = [
       "breakfast",
       "lunch",
       "late_night"
-    ]
+    ],
+    "macros": {
+      "cal": 1000,
+      "protein": 60
+    }
   },
   {
     "id": 57,
@@ -1190,7 +1417,11 @@ export const deals: Deal[] = [
     "meals": [
       "breakfast",
       "lunch"
-    ]
+    ],
+    "macros": {
+      "cal": 600,
+      "protein": 25
+    }
   },
   {
     "id": 58,
@@ -1212,7 +1443,11 @@ export const deals: Deal[] = [
       "breakfast",
       "lunch",
       "late_night"
-    ]
+    ],
+    "macros": {
+      "cal": 800,
+      "protein": 35
+    }
   },
   {
     "id": 59,
@@ -1233,7 +1468,11 @@ export const deals: Deal[] = [
     "meals": [
       "breakfast",
       "lunch"
-    ]
+    ],
+    "macros": {
+      "cal": 800,
+      "protein": 35
+    }
   },
   {
     "id": 60,
@@ -1254,7 +1493,11 @@ export const deals: Deal[] = [
     "meals": [
       "lunch",
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 550,
+      "protein": 35
+    }
   },
   {
     "id": 61,
@@ -1274,7 +1517,11 @@ export const deals: Deal[] = [
     "notes": "Sun-Fri HH",
     "meals": [
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 700,
+      "protein": 30
+    }
   },
   {
     "id": 62,
@@ -1295,7 +1542,11 @@ export const deals: Deal[] = [
     "meals": [
       "breakfast",
       "lunch"
-    ]
+    ],
+    "macros": {
+      "cal": 800,
+      "protein": 35
+    }
   },
   {
     "id": 63,
@@ -1317,7 +1568,11 @@ export const deals: Deal[] = [
       "breakfast",
       "lunch",
       "late_night"
-    ]
+    ],
+    "macros": {
+      "cal": 800,
+      "protein": 35
+    }
   },
   {
     "id": 64,
@@ -1338,7 +1593,11 @@ export const deals: Deal[] = [
     "meals": [
       "dinner",
       "late_night"
-    ]
+    ],
+    "macros": {
+      "cal": 700,
+      "protein": 30
+    }
   },
   {
     "id": 65,
@@ -1359,7 +1618,11 @@ export const deals: Deal[] = [
     "meals": [
       "lunch",
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 700,
+      "protein": 30
+    }
   },
   {
     "id": 66,
@@ -1380,7 +1643,11 @@ export const deals: Deal[] = [
     "meals": [
       "lunch",
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 750,
+      "protein": 28
+    }
   },
   {
     "id": 67,
@@ -1401,7 +1668,11 @@ export const deals: Deal[] = [
     "meals": [
       "dinner",
       "late_night"
-    ]
+    ],
+    "macros": {
+      "cal": 600,
+      "protein": 22
+    }
   },
   {
     "id": 68,
@@ -1422,7 +1693,11 @@ export const deals: Deal[] = [
     "meals": [
       "lunch",
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 700,
+      "protein": 28
+    }
   },
   {
     "id": 69,
@@ -1442,7 +1717,11 @@ export const deals: Deal[] = [
     "notes": "Sunday brief HH",
     "meals": [
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 750,
+      "protein": 28
+    }
   },
   {
     "id": 70,
@@ -1463,7 +1742,11 @@ export const deals: Deal[] = [
     "meals": [
       "breakfast",
       "late_night"
-    ]
+    ],
+    "macros": {
+      "cal": 700,
+      "protein": 28
+    }
   },
   {
     "id": 71,
@@ -1490,7 +1773,11 @@ export const deals: Deal[] = [
     "meals": [
       "lunch",
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 1100,
+      "protein": 53
+    }
   },
   {
     "id": 72,
@@ -1517,7 +1804,11 @@ export const deals: Deal[] = [
     "meals": [
       "lunch",
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 1300,
+      "protein": 55
+    }
   },
   {
     "id": 73,
@@ -1544,7 +1835,11 @@ export const deals: Deal[] = [
     "meals": [
       "lunch",
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 620,
+      "protein": 26
+    }
   },
   {
     "id": 74,
@@ -1570,7 +1865,11 @@ export const deals: Deal[] = [
     "notes": "Lunch significantly cheaper than $29.99 dinner. Price varies by location.",
     "meals": [
       "lunch"
-    ]
+    ],
+    "macros": {
+      "cal": 900,
+      "protein": 60
+    }
   },
   {
     "id": 75,
@@ -1597,7 +1896,11 @@ export const deals: Deal[] = [
     "meals": [
       "lunch",
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 550,
+      "protein": 32
+    }
   },
   {
     "id": 76,
@@ -1623,7 +1926,11 @@ export const deals: Deal[] = [
     "notes": "Combo deal includes drink and roll",
     "meals": [
       "lunch"
-    ]
+    ],
+    "macros": {
+      "cal": 550,
+      "protein": 32
+    }
   },
   {
     "id": 77,
@@ -1650,7 +1957,11 @@ export const deals: Deal[] = [
     "meals": [
       "lunch",
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 700,
+      "protein": 35
+    }
   },
   {
     "id": 78,
@@ -1677,7 +1988,11 @@ export const deals: Deal[] = [
     "meals": [
       "lunch",
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 250,
+      "protein": 8
+    }
   },
   {
     "id": 79,
@@ -1698,7 +2013,11 @@ export const deals: Deal[] = [
     "meals": [
       "lunch",
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 1200,
+      "protein": 50
+    }
   },
   {
     "id": 80,
@@ -1725,7 +2044,11 @@ export const deals: Deal[] = [
     "meals": [
       "lunch",
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 1200,
+      "protein": 50
+    }
   },
   {
     "id": 81,
@@ -1751,7 +2074,11 @@ export const deals: Deal[] = [
       "breakfast",
       "lunch",
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 600,
+      "protein": 25
+    }
   },
   {
     "id": 82,
@@ -1773,7 +2100,11 @@ export const deals: Deal[] = [
     "meals": [
       "breakfast",
       "lunch"
-    ]
+    ],
+    "macros": {
+      "cal": 600,
+      "protein": 25
+    }
   },
   {
     "id": 83,
@@ -1800,7 +2131,11 @@ export const deals: Deal[] = [
     "meals": [
       "lunch",
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 520,
+      "protein": 33
+    }
   },
   {
     "id": 84,
@@ -1829,7 +2164,11 @@ export const deals: Deal[] = [
       "lunch",
       "dinner",
       "late_night"
-    ]
+    ],
+    "macros": {
+      "cal": 800,
+      "protein": 35
+    }
   },
   {
     "id": 85,
@@ -1858,7 +2197,11 @@ export const deals: Deal[] = [
       "lunch",
       "dinner",
       "late_night"
-    ]
+    ],
+    "macros": {
+      "cal": 1100,
+      "protein": 75
+    }
   },
   {
     "id": 86,
@@ -1887,7 +2230,11 @@ export const deals: Deal[] = [
       "lunch",
       "dinner",
       "late_night"
-    ]
+    ],
+    "macros": {
+      "cal": 800,
+      "protein": 35
+    }
   },
   {
     "id": 87,
@@ -1916,7 +2263,11 @@ export const deals: Deal[] = [
       "lunch",
       "dinner",
       "late_night"
-    ]
+    ],
+    "macros": {
+      "cal": 800,
+      "protein": 35
+    }
   },
   {
     "id": 88,
@@ -1945,7 +2296,11 @@ export const deals: Deal[] = [
       "lunch",
       "dinner",
       "late_night"
-    ]
+    ],
+    "macros": {
+      "cal": 800,
+      "protein": 35
+    }
   },
   {
     "id": 89,
@@ -1974,7 +2329,11 @@ export const deals: Deal[] = [
       "lunch",
       "dinner",
       "late_night"
-    ]
+    ],
+    "macros": {
+      "cal": 800,
+      "protein": 35
+    }
   },
   {
     "id": 90,
@@ -2001,7 +2360,11 @@ export const deals: Deal[] = [
     "meals": [
       "lunch",
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 700,
+      "protein": 30
+    }
   },
   {
     "id": 91,
@@ -2028,7 +2391,11 @@ export const deals: Deal[] = [
     "meals": [
       "lunch",
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 700,
+      "protein": 30
+    }
   },
   {
     "id": 92,
@@ -2054,7 +2421,11 @@ export const deals: Deal[] = [
     "notes": "Check before booking K-Town spots. Frequently discounted.",
     "meals": [
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 700,
+      "protein": 30
+    }
   },
   {
     "id": 93,
@@ -2080,7 +2451,11 @@ export const deals: Deal[] = [
     "notes": "Beach-area sit-downs cycle frequently.",
     "meals": [
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 700,
+      "protein": 30
+    }
   },
   {
     "id": 94,
@@ -2106,7 +2481,11 @@ export const deals: Deal[] = [
     "notes": "Downtown spots run dinner + brunch vouchers.",
     "meals": [
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 700,
+      "protein": 30
+    }
   },
   {
     "id": 95,
@@ -2132,7 +2511,11 @@ export const deals: Deal[] = [
     "notes": "Multiple locations",
     "meals": [
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 550,
+      "protein": 35
+    }
   },
   {
     "id": 96,
@@ -2158,7 +2541,11 @@ export const deals: Deal[] = [
     "notes": "Until they run out",
     "meals": [
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 700,
+      "protein": 30
+    }
   },
   {
     "id": 97,
@@ -2184,7 +2571,11 @@ export const deals: Deal[] = [
     "notes": "Daily",
     "meals": [
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 700,
+      "protein": 30
+    }
   },
   {
     "id": 98,
@@ -2210,7 +2601,11 @@ export const deals: Deal[] = [
     "notes": "Daily HH",
     "meals": [
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 400,
+      "protein": 12
+    }
   },
   {
     "id": 99,
@@ -2236,7 +2631,11 @@ export const deals: Deal[] = [
     "notes": "Free taco after 10pm",
     "meals": [
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 500,
+      "protein": 22
+    }
   },
   {
     "id": 100,
@@ -2262,7 +2661,11 @@ export const deals: Deal[] = [
     "notes": "Freehand Hotel rooftop",
     "meals": [
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 400,
+      "protein": 12
+    }
   },
   {
     "id": 101,
@@ -2288,7 +2691,11 @@ export const deals: Deal[] = [
     "notes": "Mon-Fri 3-6pm",
     "meals": [
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 450,
+      "protein": 22
+    }
   },
   {
     "id": 102,
@@ -2314,7 +2721,11 @@ export const deals: Deal[] = [
     "notes": "Sun-Fri til 8pm",
     "meals": [
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 400,
+      "protein": 12
+    }
   },
   {
     "id": 103,
@@ -2340,7 +2751,11 @@ export const deals: Deal[] = [
     "notes": "Daily HH",
     "meals": [
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 500,
+      "protein": 15
+    }
   },
   {
     "id": 104,
@@ -2366,7 +2781,11 @@ export const deals: Deal[] = [
     "notes": "Evening Glass Off",
     "meals": [
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 1100,
+      "protein": 65
+    }
   },
   {
     "id": 105,
@@ -2392,7 +2811,11 @@ export const deals: Deal[] = [
     "notes": "Late night every day",
     "meals": [
       "late_night"
-    ]
+    ],
+    "macros": {
+      "cal": 700,
+      "protein": 32
+    }
   },
   {
     "id": 106,
@@ -2418,7 +2841,11 @@ export const deals: Deal[] = [
     "notes": "Multiple locations",
     "meals": [
       "late_night"
-    ]
+    ],
+    "macros": {
+      "cal": 700,
+      "protein": 32
+    }
   },
   {
     "id": 107,
@@ -2445,7 +2872,11 @@ export const deals: Deal[] = [
     "meals": [
       "dinner",
       "late_night"
-    ]
+    ],
+    "macros": {
+      "cal": 600,
+      "protein": 28
+    }
   },
   {
     "id": 108,
@@ -2471,7 +2902,11 @@ export const deals: Deal[] = [
     "notes": "Nightly",
     "meals": [
       "late_night"
-    ]
+    ],
+    "macros": {
+      "cal": 700,
+      "protein": 28
+    }
   },
   {
     "id": 109,
@@ -2498,7 +2933,11 @@ export const deals: Deal[] = [
     "meals": [
       "breakfast",
       "late_night"
-    ]
+    ],
+    "macros": {
+      "cal": 450,
+      "protein": 22
+    }
   },
   {
     "id": 110,
@@ -2524,7 +2963,11 @@ export const deals: Deal[] = [
     "notes": "Inside Grand Central Market",
     "meals": [
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 550,
+      "protein": 35
+    }
   },
   {
     "id": 111,
@@ -2550,7 +2993,11 @@ export const deals: Deal[] = [
     "notes": "Inside Union Station",
     "meals": [
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 600,
+      "protein": 22
+    }
   },
   {
     "id": 112,
@@ -2576,7 +3023,11 @@ export const deals: Deal[] = [
     "notes": "Top floor of Nordstrom",
     "meals": [
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 800,
+      "protein": 35
+    }
   },
   {
     "id": 113,
@@ -2604,7 +3055,11 @@ export const deals: Deal[] = [
       "breakfast",
       "dinner",
       "late_night"
-    ]
+    ],
+    "macros": {
+      "cal": 700,
+      "protein": 32
+    }
   },
   {
     "id": 114,
@@ -2630,7 +3085,11 @@ export const deals: Deal[] = [
     "notes": "Pier views",
     "meals": [
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 550,
+      "protein": 35
+    }
   },
   {
     "id": 115,
@@ -2656,7 +3115,11 @@ export const deals: Deal[] = [
     "notes": "Daily HH",
     "meals": [
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 800,
+      "protein": 35
+    }
   },
   {
     "id": 116,
@@ -2682,7 +3145,11 @@ export const deals: Deal[] = [
     "notes": "Dollar dumplings",
     "meals": [
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 700,
+      "protein": 30
+    }
   },
   {
     "id": 117,
@@ -2709,7 +3176,11 @@ export const deals: Deal[] = [
     "meals": [
       "lunch",
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 600,
+      "protein": 30
+    }
   },
   {
     "id": 118,
@@ -2735,7 +3206,11 @@ export const deals: Deal[] = [
     "notes": "Classic LA burger",
     "meals": [
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 950,
+      "protein": 45
+    }
   },
   {
     "id": 119,
@@ -2761,7 +3236,11 @@ export const deals: Deal[] = [
     "notes": "NYC import",
     "meals": [
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 550,
+      "protein": 22
+    }
   },
   {
     "id": 120,
@@ -2787,7 +3266,11 @@ export const deals: Deal[] = [
     "notes": "Happy Hour and a Half",
     "meals": [
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 700,
+      "protein": 30
+    }
   },
   {
     "id": 121,
@@ -2813,7 +3296,11 @@ export const deals: Deal[] = [
     "notes": "French bistro deal",
     "meals": [
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 700,
+      "protein": 30
+    }
   },
   {
     "id": 122,
@@ -2840,7 +3327,11 @@ export const deals: Deal[] = [
     "meals": [
       "lunch",
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 700,
+      "protein": 30
+    }
   },
   {
     "id": 123,
@@ -2866,7 +3357,11 @@ export const deals: Deal[] = [
     "notes": "Every day not just Tue",
     "meals": [
       "late_night"
-    ]
+    ],
+    "macros": {
+      "cal": 450,
+      "protein": 22
+    }
   },
   {
     "id": 124,
@@ -2890,7 +3385,11 @@ export const deals: Deal[] = [
     "notes": "Plant-based",
     "meals": [
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 550,
+      "protein": 22
+    }
   },
   {
     "id": 125,
@@ -2914,7 +3413,11 @@ export const deals: Deal[] = [
     "notes": "Long HH window",
     "meals": [
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 600,
+      "protein": 28
+    }
   },
   {
     "id": 126,
@@ -2939,7 +3442,11 @@ export const deals: Deal[] = [
     "meals": [
       "lunch",
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 1000,
+      "protein": 50
+    }
   },
   {
     "id": 127,
@@ -2963,7 +3470,11 @@ export const deals: Deal[] = [
     "notes": "Beachy bar",
     "meals": [
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 800,
+      "protein": 35
+    }
   },
   {
     "id": 128,
@@ -2987,7 +3498,11 @@ export const deals: Deal[] = [
     "notes": "Short HH but cheap",
     "meals": [
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 500,
+      "protein": 22
+    }
   },
   {
     "id": 129,
@@ -3011,7 +3526,11 @@ export const deals: Deal[] = [
     "notes": "Mon-Fri",
     "meals": [
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 550,
+      "protein": 35
+    }
   },
   {
     "id": 130,
@@ -3036,7 +3555,11 @@ export const deals: Deal[] = [
     "meals": [
       "dinner",
       "late_night"
-    ]
+    ],
+    "macros": {
+      "cal": 800,
+      "protein": 32
+    }
   },
   {
     "id": 131,
@@ -3060,7 +3583,11 @@ export const deals: Deal[] = [
     "notes": "5-hour HH",
     "meals": [
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 400,
+      "protein": 12
+    }
   },
   {
     "id": 132,
@@ -3085,7 +3612,11 @@ export const deals: Deal[] = [
     "meals": [
       "dinner",
       "late_night"
-    ]
+    ],
+    "macros": {
+      "cal": 700,
+      "protein": 30
+    }
   },
   {
     "id": 133,
@@ -3109,7 +3640,11 @@ export const deals: Deal[] = [
     "notes": "Inside Hotel Figueroa",
     "meals": [
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 400,
+      "protein": 12
+    }
   },
   {
     "id": 134,
@@ -3133,7 +3668,11 @@ export const deals: Deal[] = [
     "notes": "Long HH window",
     "meals": [
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 800,
+      "protein": 32
+    }
   },
   {
     "id": 135,
@@ -3157,7 +3696,11 @@ export const deals: Deal[] = [
     "notes": "Skyline views",
     "meals": [
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 600,
+      "protein": 25
+    }
   },
   {
     "id": 136,
@@ -3181,7 +3724,11 @@ export const deals: Deal[] = [
     "notes": "Long weekend HH",
     "meals": [
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 400,
+      "protein": 12
+    }
   },
   {
     "id": 137,
@@ -3205,7 +3752,11 @@ export const deals: Deal[] = [
     "notes": "Tue-Fri lunch only",
     "meals": [
       "lunch"
-    ]
+    ],
+    "macros": {
+      "cal": 600,
+      "protein": 28
+    }
   },
   {
     "id": 138,
@@ -3231,7 +3782,11 @@ export const deals: Deal[] = [
       "breakfast",
       "lunch",
       "late_night"
-    ]
+    ],
+    "macros": {
+      "cal": 800,
+      "protein": 35
+    }
   },
   {
     "id": 139,
@@ -3255,7 +3810,11 @@ export const deals: Deal[] = [
     "notes": "Sherman Oaks too",
     "meals": [
       "lunch"
-    ]
+    ],
+    "macros": {
+      "cal": 700,
+      "protein": 30
+    }
   },
   {
     "id": 140,
@@ -3279,7 +3838,11 @@ export const deals: Deal[] = [
     "notes": "Mon-Fri lunch",
     "meals": [
       "lunch"
-    ]
+    ],
+    "macros": {
+      "cal": 750,
+      "protein": 28
+    }
   },
   {
     "id": 141,
@@ -3305,7 +3868,11 @@ export const deals: Deal[] = [
       "breakfast",
       "lunch",
       "late_night"
-    ]
+    ],
+    "macros": {
+      "cal": 700,
+      "protein": 30
+    }
   },
   {
     "id": 142,
@@ -3329,7 +3896,11 @@ export const deals: Deal[] = [
     "notes": "Historic DTLA bar",
     "meals": [
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 850,
+      "protein": 45
+    }
   },
   {
     "id": 143,
@@ -3353,7 +3924,11 @@ export const deals: Deal[] = [
     "notes": "Tue-Fri + Tue-Sat 11pm-close",
     "meals": [
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 700,
+      "protein": 32
+    }
   },
   {
     "id": 144,
@@ -3377,7 +3952,11 @@ export const deals: Deal[] = [
     "notes": "Top LA cocktail bar",
     "meals": [
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 400,
+      "protein": 12
+    }
   },
   {
     "id": 145,
@@ -3401,7 +3980,11 @@ export const deals: Deal[] = [
     "notes": "Tue-Sun",
     "meals": [
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 700,
+      "protein": 30
+    }
   },
   {
     "id": 146,
@@ -3422,7 +4005,11 @@ export const deals: Deal[] = [
     "notes": "Weekend short HH",
     "meals": [
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 450,
+      "protein": 22
+    }
   },
   {
     "id": 147,
@@ -3443,7 +4030,11 @@ export const deals: Deal[] = [
     "notes": "Weekend HH",
     "meals": [
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 450,
+      "protein": 22
+    }
   },
   {
     "id": 148,
@@ -3464,7 +4055,11 @@ export const deals: Deal[] = [
     "notes": "Nicer-spot deal",
     "meals": [
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 400,
+      "protein": 12
+    }
   },
   {
     "id": 149,
@@ -3485,7 +4080,11 @@ export const deals: Deal[] = [
     "notes": "High-end weekend HH",
     "meals": [
       "dinner"
-    ]
+    ],
+    "macros": {
+      "cal": 1100,
+      "protein": 65
+    }
   }
 ];
 
