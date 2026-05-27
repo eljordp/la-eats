@@ -2,6 +2,9 @@
 
 import { useEffect, useMemo, useState } from "react";
 import type { Deal, Meal } from "@/data/deals";
+import { milesToNeighborhood } from "@/lib/distance";
+import { isActiveNow } from "@/lib/active";
+import RestaurantAvatar from "./RestaurantAvatar";
 
 const DAY_LONG: Record<string, string> = {
   Mon: "Monday",
@@ -25,8 +28,14 @@ const MEAL_KEYS: (Meal | "all")[] = ["all", "breakfast", "lunch", "dinner", "lat
 
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const;
 
+const LAZY_CATEGORIES = new Set(["Delivery App", "Voucher App"]);
+
+const GEO_STORAGE_KEY = "la-eats:user-coords";
+
+type UserCoords = { lat: number; lng: number };
+type Mode = "out" | "lazy";
+
 function todayShortDay(): string {
-  // JS getDay: 0 = Sun ... 6 = Sat
   const map = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   return map[new Date().getDay()];
 }
@@ -48,10 +57,22 @@ function todayLongString(): string {
 }
 
 function formatOneTimeDate(iso: string): string {
-  // iso = "YYYY-MM-DD"
   const [y, m, d] = iso.split("-").map((n) => parseInt(n, 10));
   const date = new Date(y, m - 1, d);
   return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+
+function priceValue(p: string): number {
+  if (!p) return 99;
+  const lower = p.toLowerCase().trim();
+  if (lower.includes("varies") || lower.includes("cashback") || lower.includes("first order")) return 999;
+  if (lower.includes("sandwich price")) return 15;
+  const match = p.match(/\$\s?(\d+(?:\.\d+)?)/);
+  if (match) return parseFloat(match[1]);
+  if (lower === "$") return 8;
+  if (lower === "$$") return 20;
+  if (lower === "$$$") return 40;
+  return 99;
 }
 
 type Props = {
@@ -66,14 +87,66 @@ export default function DealsClient({ allDeals }: Props) {
   const [category, setCategory] = useState<string>("All");
   const [query, setQuery] = useState<string>("");
   const [dateLabel, setDateLabel] = useState<string>("");
+  const [mode, setMode] = useState<Mode>("out");
+  const [coords, setCoords] = useState<UserCoords | null>(null);
+  const [geoStatus, setGeoStatus] = useState<"idle" | "pending" | "granted" | "denied">("idle");
 
-  // Initialize day/meal/dateLabel client-side to avoid hydration mismatch.
+  // Hydrate day/meal/date + try geolocation.
   useEffect(() => {
     setDay(todayShortDay());
     setMeal(currentMeal());
     setDateLabel(todayLongString());
     setHydrated(true);
+
+    // Restore cached coords first (avoid re-prompt on refresh).
+    try {
+      const cached = sessionStorage.getItem(GEO_STORAGE_KEY);
+      if (cached) {
+        const parsed = JSON.parse(cached) as UserCoords;
+        if (
+          parsed &&
+          typeof parsed.lat === "number" &&
+          typeof parsed.lng === "number"
+        ) {
+          setCoords(parsed);
+          setGeoStatus("granted");
+          return;
+        }
+      }
+    } catch {
+      // ignore
+    }
+
+    if (typeof navigator !== "undefined" && navigator.geolocation) {
+      setGeoStatus("pending");
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const c = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+          setCoords(c);
+          setGeoStatus("granted");
+          try {
+            sessionStorage.setItem(GEO_STORAGE_KEY, JSON.stringify(c));
+          } catch {
+            // ignore
+          }
+        },
+        () => {
+          setGeoStatus("denied");
+        },
+        { enableHighAccuracy: false, timeout: 8000, maximumAge: 600000 }
+      );
+    }
   }, []);
+
+  function resetLocation() {
+    setCoords(null);
+    setGeoStatus("denied");
+    try {
+      sessionStorage.removeItem(GEO_STORAGE_KEY);
+    } catch {
+      // ignore
+    }
+  }
 
   const neighborhoods = useMemo(() => {
     const set = new Set<string>();
@@ -83,13 +156,22 @@ export default function DealsClient({ allDeals }: Props) {
 
   const categories = useMemo(() => {
     const set = new Set<string>();
-    for (const d of allDeals) set.add(d.category);
+    for (const d of allDeals) {
+      // Hide lazy categories from the dropdown — they're toggled via mode.
+      if (LAZY_CATEGORIES.has(d.category)) continue;
+      set.add(d.category);
+    }
     return ["All", ...[...set].sort((a, b) => a.localeCompare(b))];
   }, [allDeals]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     return allDeals.filter((d) => {
+      // Mode filter: Lazy mode shows ONLY delivery/voucher; Going Out hides them.
+      const isLazyCat = LAZY_CATEGORIES.has(d.category);
+      if (mode === "lazy" && !isLazyCat) return false;
+      if (mode === "out" && isLazyCat) return false;
+
       if (!d.days.includes(day)) return false;
       if (meal !== "all" && !d.meals.includes(meal)) return false;
       if (neighborhood !== "All" && d.neighborhood !== neighborhood) return false;
@@ -100,22 +182,48 @@ export default function DealsClient({ allDeals }: Props) {
       }
       return true;
     });
-  }, [allDeals, day, meal, neighborhood, category, query]);
+  }, [allDeals, day, meal, neighborhood, category, query, mode]);
 
-  // Sort: cheapest first. Parse Price into a number; push "Varies"/"Cashback"/no-clear-price to the bottom.
-  const sorted = useMemo(() => {
-    function priceValue(p: string): number {
-      if (!p) return 99;
-      const lower = p.toLowerCase().trim();
-      if (lower.includes("varies") || lower.includes("cashback") || lower.includes("first order")) return 999;
-      if (lower.includes("sandwich price")) return 15;
-      const match = p.match(/\$\s?(\d+(?:\.\d+)?)/);
-      if (match) return parseFloat(match[1]);
-      if (lower === "$") return 8;
-      if (lower === "$$") return 20;
-      if (lower === "$$$") return 40;
-      return 99;
+  // Per-deal distance (in miles) — only when we have user coords and we're not in lazy mode.
+  const distancesById = useMemo(() => {
+    const map = new Map<number, number | null>();
+    if (!coords) return map;
+    for (const d of filtered) {
+      const m = milesToNeighborhood(coords, d.neighborhood);
+      map.set(d.id, m);
     }
+    return map;
+  }, [filtered, coords]);
+
+  const smartSortActive = !!coords && mode === "out";
+
+  const sorted = useMemo(() => {
+    if (smartSortActive) {
+      return [...filtered].sort((a, b) => {
+        const ascore = compositeScore(a, distancesById.get(a.id) ?? null);
+        const bscore = compositeScore(b, distancesById.get(b.id) ?? null);
+        if (ascore !== bscore) return ascore - bscore;
+        const pa = priceValue(a.price);
+        const pb = priceValue(b.price);
+        if (pa !== pb) return pa - pb;
+        return a.restaurant.localeCompare(b.restaurant);
+      });
+    }
+
+    if (mode === "lazy") {
+      // Sort by active-now first, then cheapest.
+      return [...filtered].sort((a, b) => {
+        const aa = isActiveNow(a.timeWindow) ? 0 : 1;
+        const bb = isActiveNow(b.timeWindow) ? 0 : 1;
+        if (aa !== bb) return aa - bb;
+        const pa = priceValue(a.price);
+        const pb = priceValue(b.price);
+        if (pa !== pb) return pa - pb;
+        return a.restaurant.localeCompare(b.restaurant);
+      });
+    }
+
+    // Default fallback (no location, going out): existing cheap-first.
     return [...filtered].sort((a, b) => {
       const pa = priceValue(a.price);
       const pb = priceValue(b.price);
@@ -124,7 +232,7 @@ export default function DealsClient({ allDeals }: Props) {
       if (!a.oneTimeDate && b.oneTimeDate) return 1;
       return a.restaurant.localeCompare(b.restaurant);
     });
-  }, [filtered]);
+  }, [filtered, smartSortActive, distancesById, mode]);
 
   return (
     <>
@@ -133,7 +241,7 @@ export default function DealsClient({ allDeals }: Props) {
         <div className="mx-auto max-w-3xl">
           <div className="flex items-center justify-between text-2xs uppercase tracking-[0.18em] text-[var(--color-muted)]">
             <span>Los Angeles · Volume 01</span>
-            <span suppressHydrationWarning>{dateLabel || " "}</span>
+            <span suppressHydrationWarning>{dateLabel || " "}</span>
           </div>
           <h1 className="font-serif mt-4 text-5xl sm:text-6xl lg:text-7xl leading-[0.95] tracking-tight text-[var(--color-ink)]">
             LA Eats
@@ -149,6 +257,38 @@ export default function DealsClient({ allDeals }: Props) {
       {/* Filters */}
       <section className="px-5 sm:px-8 lg:px-12 sticky top-0 z-20 bg-[var(--color-paper)]/95 backdrop-blur supports-[backdrop-filter]:bg-[var(--color-paper)]/80 border-b border-[var(--color-rule)]">
         <div className="mx-auto max-w-3xl py-3 sm:py-4 flex flex-col gap-3">
+          {/* Mode toggle */}
+          <div className="flex items-center justify-between gap-3">
+            <ModeToggle mode={mode} onChange={setMode} />
+            {smartSortActive && (
+              <span className="hidden sm:inline-flex items-center gap-2 text-2xs uppercase tracking-[0.18em] text-[var(--color-muted)]">
+                <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-clay)]" />
+                Sorted for you
+                <button
+                  type="button"
+                  onClick={resetLocation}
+                  className="ml-1 underline decoration-[var(--color-rule)] underline-offset-2 hover:decoration-[var(--color-ink)]"
+                >
+                  reset
+                </button>
+              </span>
+            )}
+          </div>
+
+          {smartSortActive && (
+            <div className="sm:hidden flex items-center gap-2 text-2xs uppercase tracking-[0.18em] text-[var(--color-muted)]">
+              <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-clay)]" />
+              Sorted for you
+              <button
+                type="button"
+                onClick={resetLocation}
+                className="ml-1 underline decoration-[var(--color-rule)] underline-offset-2 hover:decoration-[var(--color-ink)]"
+              >
+                reset location
+              </button>
+            </div>
+          )}
+
           {/* Day chips */}
           <div className="flex items-center gap-2 overflow-x-auto no-scrollbar -mx-1 px-1">
             {DAYS.map((d) => {
@@ -209,18 +349,20 @@ export default function DealsClient({ allDeals }: Props) {
                 className="w-full rounded-full border border-[var(--color-rule)] bg-[var(--color-paper)] px-4 py-2 text-sm placeholder:text-[var(--color-muted)] focus:border-[var(--color-ink)] outline-none"
               />
             </label>
-            <select
-              value={neighborhood}
-              onChange={(e) => setNeighborhood(e.target.value)}
-              className="rounded-full border border-[var(--color-rule)] bg-[var(--color-paper)] px-3 py-2 text-sm text-[var(--color-ink-2)] focus:border-[var(--color-ink)] outline-none"
-              aria-label="Neighborhood"
-            >
-              {neighborhoods.map((n) => (
-                <option key={n} value={n}>
-                  {n === "All" ? "All neighborhoods" : n}
-                </option>
-              ))}
-            </select>
+            {mode === "out" && (
+              <select
+                value={neighborhood}
+                onChange={(e) => setNeighborhood(e.target.value)}
+                className="rounded-full border border-[var(--color-rule)] bg-[var(--color-paper)] px-3 py-2 text-sm text-[var(--color-ink-2)] focus:border-[var(--color-ink)] outline-none"
+                aria-label="Neighborhood"
+              >
+                {neighborhoods.map((n) => (
+                  <option key={n} value={n}>
+                    {n === "All" ? "All neighborhoods" : n}
+                  </option>
+                ))}
+              </select>
+            )}
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
@@ -242,7 +384,7 @@ export default function DealsClient({ allDeals }: Props) {
         <div className="mx-auto max-w-3xl">
           <div className="flex items-baseline justify-between mb-5">
             <h2 className="font-serif text-2xl sm:text-3xl text-[var(--color-ink)]">
-              {hydrated ? DAY_LONG[day] : " "}
+              {hydrated ? DAY_LONG[day] : " "}
               {meal !== "all" && (
                 <span className="text-[var(--color-muted)] font-serif italic">
                   {" "}
@@ -266,8 +408,14 @@ export default function DealsClient({ allDeals }: Props) {
             </div>
           ) : (
             <ul className="divide-y divide-[var(--color-rule)]">
-              {sorted.map((d) => (
-                <DealCard key={d.id} deal={d} />
+              {sorted.map((d, idx) => (
+                <DealCard
+                  key={d.id}
+                  deal={d}
+                  miles={distancesById.get(d.id) ?? null}
+                  showDistance={mode === "out" && !!coords}
+                  isRecommended={smartSortActive && idx === 0}
+                />
               ))}
             </ul>
           )}
@@ -281,28 +429,112 @@ export default function DealsClient({ allDeals }: Props) {
           <span>{allDeals.length} verified deals</span>
         </div>
       </footer>
+
+      {/* Suppress the unused-variable check on geoStatus (kept for future UI). */}
+      {geoStatus === "pending" && <span className="sr-only">Locating you…</span>}
     </>
   );
 }
 
-function DealCard({ deal }: { deal: Deal }) {
+function compositeScore(deal: Deal, miles: number | null): number {
+  const price = priceValue(deal.price);
+  const dist = miles ?? 5; // chain/app or unknown -> treat as ~5 mi
+  const active = isActiveNow(deal.timeWindow) ? 0 : 4;
+  return price + dist * 2 + active;
+}
+
+function ModeToggle({
+  mode,
+  onChange,
+}: {
+  mode: Mode;
+  onChange: (m: Mode) => void;
+}) {
+  return (
+    <div
+      className="inline-flex items-center rounded-full border border-[var(--color-rule)] p-0.5 bg-[var(--color-paper)]"
+      role="tablist"
+      aria-label="How you're eating"
+    >
+      <button
+        type="button"
+        role="tab"
+        aria-selected={mode === "out"}
+        onClick={() => onChange("out")}
+        className={[
+          "px-3.5 py-1.5 rounded-full text-[12px] uppercase tracking-[0.16em] transition font-serif",
+          mode === "out"
+            ? "bg-[var(--color-ink)] text-[var(--color-paper)]"
+            : "text-[var(--color-muted)] hover:text-[var(--color-ink-2)]",
+        ].join(" ")}
+      >
+        Going out
+      </button>
+      <button
+        type="button"
+        role="tab"
+        aria-selected={mode === "lazy"}
+        onClick={() => onChange("lazy")}
+        className={[
+          "px-3.5 py-1.5 rounded-full text-[12px] uppercase tracking-[0.16em] transition font-serif",
+          mode === "lazy"
+            ? "bg-[var(--color-ink)] text-[var(--color-paper)]"
+            : "text-[var(--color-muted)] hover:text-[var(--color-ink-2)]",
+        ].join(" ")}
+      >
+        Lazy
+      </button>
+    </div>
+  );
+}
+
+function DealCard({
+  deal,
+  miles,
+  showDistance,
+  isRecommended,
+}: {
+  deal: Deal;
+  miles: number | null;
+  showDistance: boolean;
+  isRecommended: boolean;
+}) {
+  const milesLabel =
+    showDistance && miles != null ? `${miles.toFixed(1)} mi` : null;
+
   return (
     <li className="py-6 first:pt-2">
-      <article className="grid grid-cols-[1fr_auto] gap-x-4 gap-y-2">
+      <article className="grid grid-cols-[auto_1fr_auto] gap-x-4 gap-y-2">
+        <div className="pt-1">
+          <RestaurantAvatar restaurant={deal.restaurant} size={52} />
+        </div>
         <div className="min-w-0">
-          {/* One-time badge */}
-          {deal.oneTimeDate && (
-            <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-[var(--color-clay)] px-2.5 py-1 text-[10px] uppercase tracking-[0.2em] text-[var(--color-paper)]">
-              <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-paper)]" />
-              One day only · {formatOneTimeDate(deal.oneTimeDate)}
-            </div>
-          )}
+          {/* Recommended + One-time badges */}
+          <div className="mb-2 flex flex-wrap items-center gap-2">
+            {isRecommended && (
+              <span className="inline-flex items-center gap-2 rounded-full border border-[var(--color-clay)] px-2.5 py-1 text-[10px] uppercase tracking-[0.22em] text-[var(--color-clay)]">
+                Recommended
+              </span>
+            )}
+            {deal.oneTimeDate && (
+              <span className="inline-flex items-center gap-2 rounded-full bg-[var(--color-clay)] px-2.5 py-1 text-[10px] uppercase tracking-[0.2em] text-[var(--color-paper)]">
+                <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-paper)]" />
+                One day only · {formatOneTimeDate(deal.oneTimeDate)}
+              </span>
+            )}
+          </div>
 
           <h3 className="font-serif text-[22px] sm:text-[26px] leading-tight text-[var(--color-ink)]">
             {deal.restaurant}
           </h3>
           <p className="mt-0.5 text-[13px] text-[var(--color-muted)]">
             {deal.neighborhood}
+            {milesLabel && (
+              <>
+                <span className="mx-1.5 text-[var(--color-rule)]">·</span>
+                <span className="text-[var(--color-ink-2)]">{milesLabel}</span>
+              </>
+            )}
           </p>
 
           <p className="mt-3 text-[15px] leading-relaxed text-[var(--color-ink-2)]">
