@@ -171,6 +171,36 @@ function priceValue(p: string): number {
   return 99;
 }
 
+// Display-friendly price: if Price column is just a tier ($/$$/$$$) or empty,
+// pull the lowest dollar amount from the deal text instead so the badge isn't useless.
+function displayPrice(deal: Deal): string {
+  const p = (deal.price || "").trim();
+  const isTier = p === "" || p === "$" || p === "$$" || p === "$$$";
+  if (!isTier) return p;
+  const matches = [...(deal.deal || "").matchAll(/\$\s?(\d+(?:\.\d{1,2})?)/g)];
+  if (matches.length === 0) return p || "—";
+  const nums = matches.map((m) => parseFloat(m[1])).filter((n) => !isNaN(n) && n > 0);
+  if (nums.length === 0) return p || "—";
+  const lo = Math.min(...nums);
+  return `From $${lo % 1 === 0 ? lo.toFixed(0) : lo.toFixed(2)}`;
+}
+
+// Render deal text with $ amounts emphasized in the accent color.
+function renderDealText(text: string): React.ReactNode {
+  if (!text) return null;
+  const parts = text.split(/(\$\s?\d+(?:\.\d{1,2})?)/g);
+  return parts.map((part, i) => {
+    if (/^\$\s?\d/.test(part)) {
+      return (
+        <span key={i} className="font-semibold text-[var(--color-clay)]">
+          {part}
+        </span>
+      );
+    }
+    return <span key={i}>{part}</span>;
+  });
+}
+
 function dealText(deal: Deal): string {
   return `${deal.restaurant} ${deal.cuisine} ${deal.category} ${deal.deal} ${deal.timeWindow} ${deal.notes} ${
     deal.traits?.join(" ") ?? ""
@@ -1269,7 +1299,7 @@ function DealCard({
             </div>
             <div className="shrink-0 text-right max-w-[8rem]">
               <span className="block font-serif text-[21px] sm:text-[24px] leading-none text-[var(--color-ink)] break-words">
-                {deal.price || "—"}
+                {displayPrice(deal)}
               </span>
               <span className="mt-1 block text-[10px] uppercase tracking-[0.2em] text-[var(--color-muted)]">
                 price
@@ -1278,7 +1308,7 @@ function DealCard({
           </div>
 
           <p className="mt-3 text-[15px] leading-relaxed text-[var(--color-ink-2)]">
-            {deal.deal}
+            {renderDealText(deal.deal)}
           </p>
 
           <p className="mt-2 text-[13px] text-[var(--color-muted)] italic">
