@@ -83,6 +83,7 @@ const GEO_STORAGE_KEY = "la-eats:user-coords";
 type UserCoords = { lat: number; lng: number };
 type Mode = "out" | "lazy";
 type SortMode = "best" | "price" | "distance";
+type CadenceFilter = "all" | "day-specific" | "everyday";
 type QuickFilter =
   | "all"
   | "cheap_protein"
@@ -100,6 +101,12 @@ const SORTS: { key: SortMode; label: string }[] = [
   { key: "best", label: "Best today" },
   { key: "price", label: "Cheapest" },
   { key: "distance", label: "Near me" },
+];
+
+const CADENCE_FILTERS: { key: CadenceFilter; label: string }[] = [
+  { key: "all", label: "All deals" },
+  { key: "day-specific", label: "Today specials" },
+  { key: "everyday", label: "Everyday prices" },
 ];
 
 const QUICK_FILTERS: { key: QuickFilter; label: string }[] = [
@@ -352,6 +359,9 @@ function shareText(deal: Deal, day: string): string {
   return parts.join("\n");
 }
 
+function cadenceLabel(deal: Deal): string {
+  return deal.cadence === "everyday" ? "everyday price" : "today special";
+}
 
 type Props = {
   allDeals: Deal[];
@@ -367,6 +377,7 @@ export default function DealsClient({ allDeals }: Props) {
   const [dateLabel, setDateLabel] = useState<string>("");
   const [mode, setMode] = useState<Mode>("out");
   const [sortMode, setSortMode] = useState<SortMode>("best");
+  const [cadenceFilter, setCadenceFilter] = useState<CadenceFilter>("all");
   const [quickFilter, setQuickFilter] = useState<QuickFilter>("all");
   const [activeTraits, setActiveTraits] = useState<string[]>([]);
   const [coords, setCoords] = useState<UserCoords | null>(null);
@@ -547,6 +558,7 @@ export default function DealsClient({ allDeals }: Props) {
 
       if (!d.days.includes(day)) return false;
       if (meal !== "all" && !d.meals.includes(meal)) return false;
+      if (cadenceFilter !== "all" && d.cadence !== cadenceFilter) return false;
       if (neighborhood !== "All" && d.neighborhood !== neighborhood) return false;
       if (category !== "All" && d.category !== category) return false;
       if (!passesQuickFilter(d, quickFilter)) return false;
@@ -560,7 +572,7 @@ export default function DealsClient({ allDeals }: Props) {
       }
       return true;
     });
-  }, [unexpired, day, meal, neighborhood, category, query, mode, quickFilter, activeTraits]);
+  }, [unexpired, day, meal, neighborhood, category, query, mode, quickFilter, activeTraits, cadenceFilter]);
 
   const remaining = useMemo(() => {
     if (!targets) return null;
@@ -641,6 +653,29 @@ export default function DealsClient({ allDeals }: Props) {
     const idSet = new Set(visibleMapIds);
     return sorted.filter((d) => idSet.has(d.id));
   }, [sorted, mapView, visibleMapIds]);
+
+  const resultSections = useMemo(() => {
+    if (cadenceFilter === "day-specific") {
+      return [{ key: "day-specific", title: "Today specials", deals: displayed }];
+    }
+    if (cadenceFilter === "everyday") {
+      return [{ key: "everyday", title: "Everyday prices", deals: displayed }];
+    }
+    return [
+      {
+        key: "day-specific",
+        title: "Today specials",
+        deals: displayed.filter((d) => d.cadence === "day-specific"),
+      },
+      {
+        key: "everyday",
+        title: "Everyday prices",
+        deals: displayed.filter((d) => d.cadence === "everyday"),
+      },
+    ].filter((section) => section.deals.length > 0);
+  }, [displayed, cadenceFilter]);
+
+  const bestDealId = sortMode === "best" && !mapView ? displayed[0]?.id : undefined;
 
   function toggleTrait(t: string) {
     setActiveTraits((cur) =>
@@ -967,6 +1002,28 @@ export default function DealsClient({ allDeals }: Props) {
             })}
           </div>
 
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar -mx-1 px-1">
+            {CADENCE_FILTERS.map((f) => {
+              const active = f.key === cadenceFilter;
+              return (
+                <button
+                  key={f.key}
+                  type="button"
+                  onClick={() => setCadenceFilter(f.key)}
+                  aria-pressed={active}
+                  className={[
+                    "shrink-0 rounded-full px-3 py-1.5 text-[11px] uppercase tracking-[0.15em] transition border",
+                    active
+                      ? "border-[var(--color-ink)] text-[var(--color-ink)] bg-[var(--color-paper-2)]"
+                      : "border-[var(--color-rule)] text-[var(--color-muted)] hover:text-[var(--color-ink-2)]",
+                  ].join(" ")}
+                >
+                  {f.label}
+                </button>
+              );
+            })}
+          </div>
+
           {/* Secondary filters */}
           <div className="flex flex-wrap items-center gap-2">
             <label className="relative flex-1 min-w-[10rem]">
@@ -1089,20 +1146,36 @@ export default function DealsClient({ allDeals }: Props) {
               </p>
             </div>
           ) : (
-            <ul className="divide-y divide-[var(--color-rule)]">
-              {displayed.map((d, idx) => (
-                <DealCard
-                  key={d.id}
-                  deal={d}
-                  miles={distancesById.get(d.id) ?? null}
-                  showDistance={!!coords}
-                  isRecommended={sortMode === "best" && idx === 0 && !mapView}
-                  valueScore={bestValueScore(d, distancesById.get(d.id) ?? null, mode)}
-                  onEat={handleEatDeal}
-                  onShare={handleShare}
-                />
+            <div className="space-y-9">
+              {resultSections.map((section) => (
+                <section key={section.key}>
+                  {(cadenceFilter !== section.key || resultSections.length > 1) && (
+                    <div className="mb-2 flex items-baseline justify-between gap-3 border-b border-[var(--color-rule)] pb-2">
+                      <h3 className="text-2xs uppercase tracking-[0.2em] text-[var(--color-muted)]">
+                        {section.title}
+                      </h3>
+                      <span className="text-2xs uppercase tracking-[0.18em] text-[var(--color-muted)]">
+                        {section.deals.length}
+                      </span>
+                    </div>
+                  )}
+                  <ul className="divide-y divide-[var(--color-rule)]">
+                    {section.deals.map((d) => (
+                      <DealCard
+                        key={d.id}
+                        deal={d}
+                        miles={distancesById.get(d.id) ?? null}
+                        showDistance={!!coords}
+                        isRecommended={d.id === bestDealId}
+                        valueScore={bestValueScore(d, distancesById.get(d.id) ?? null, mode)}
+                        onEat={handleEatDeal}
+                        onShare={handleShare}
+                      />
+                    ))}
+                  </ul>
+                </section>
               ))}
-            </ul>
+            </div>
           )}
         </div>
       </main>
@@ -1326,6 +1399,7 @@ function DealCard({
           <div className="mt-3 flex flex-wrap items-center gap-1.5">
             {deal.cuisine && <Tag>{deal.cuisine}</Tag>}
             {deal.category && <Tag>{deal.category}</Tag>}
+            <Tag>{cadenceLabel(deal)}</Tag>
             {(deal.traits || []).map((t) => (
               <TraitChip key={t}>{t}</TraitChip>
             ))}

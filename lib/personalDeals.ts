@@ -70,6 +70,14 @@ export function inferMealsFromWindow(tw: string | null | undefined): Meal[] {
   return [...set];
 }
 
+function inferCadence(dayInput: string | null | undefined): Deal["cadence"] {
+  const lower = (dayInput || "").trim().toLowerCase();
+  if (!lower || lower === "daily" || lower === "weekdays" || lower === "weekends") {
+    return "everyday";
+  }
+  return "day-specific";
+}
+
 export function dealFromParsed(parsed: ParsedDeal, overrides?: Partial<Deal>): Deal {
   const id = `personal-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
   const days = normalizeDays(parsed.day);
@@ -92,6 +100,7 @@ export function dealFromParsed(parsed: ParsedDeal, overrides?: Partial<Deal>): D
     meals,
     isPersonal: true,
     ...overrides,
+    cadence: overrides?.cadence ?? inferCadence(parsed.day),
   };
 }
 
@@ -105,6 +114,7 @@ export function loadPersonalDeals(): Deal[] {
     return parsed.map((d) => ({
       ...d,
       days: Array.isArray(d.days) ? d.days : [...ALL_DAYS],
+      cadence: d.cadence === "day-specific" || d.cadence === "everyday" ? d.cadence : inferCadence(d.day),
       traits: Array.isArray(d.traits) ? d.traits : [],
       meals: Array.isArray(d.meals) ? d.meals : ["dinner"],
       isPersonal: true,

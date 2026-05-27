@@ -197,6 +197,43 @@ function normalizeDays(dayCell) {
   return { days: [...ALL_DAYS] };
 }
 
+function inferCadence(dayCell) {
+  const lower = dayCell.trim().toLowerCase();
+  if (lower === "daily" || lower === "weekdays" || lower === "weekends") return "everyday";
+  return "day-specific";
+}
+
+function normalizePrice(priceCell, dealCell) {
+  const price = priceCell.trim();
+  const deal = dealCell.trim();
+  const lowerDeal = deal.toLowerCase();
+
+  if (price && !["$", "$$", "$$$"].includes(price)) return price;
+  if (/2-for-1/.test(lowerDeal)) return "2-for-1";
+  if (/\bbogo\b/.test(lowerDeal)) return "BOGO";
+  if (/99[\s-]?cent/.test(lowerDeal)) return "$0.99";
+  if (/90[\s-]?cent/.test(lowerDeal)) return "$0.90";
+  if (/free/.test(lowerDeal) && !/\$\d/.test(deal)) return "Free";
+
+  const dollarMatches = [
+    ...deal.matchAll(/\$\s?(\d+(?:\.\d+)?)(?:\s?-\s?\$?\s?(\d+(?:\.\d+)?))?(?:\/\w+)?/g),
+  ];
+  if (dollarMatches.length === 0) return price ? "Menu price" : "Varies";
+
+  const values = dollarMatches.flatMap((match) => {
+    const first = parseFloat(match[1]);
+    const second = match[2] ? parseFloat(match[2]) : null;
+    return second == null ? [first] : [first, second];
+  });
+  const low = Math.min(...values);
+  const high = Math.max(...values);
+  const fmt = (n) => (Number.isInteger(n) ? `$${n}` : `$${n.toFixed(2)}`);
+
+  if (dollarMatches.length === 1 && dollarMatches[0][2]) return `${fmt(low)}-${fmt(high)}`;
+  if (dollarMatches.length === 1) return dollarMatches[0][0].replace(/\s+/g, "");
+  return low === high ? fmt(low) : `from ${fmt(low)}`;
+}
+
 // Decide meals based on time_window + category + notes.
 function inferMeals(deal) {
   const tw = (deal.Time_Window || "").toLowerCase();
@@ -361,6 +398,7 @@ const deals = rows.map((r, i) => {
   const obj = {};
   for (const k of Object.keys(idx)) obj[k] = (r[idx[k]] || "").trim();
   const { days, oneTimeDate } = normalizeDays(obj.Day);
+  const cadence = inferCadence(obj.Day);
   const meals = inferMeals(obj);
   const baseline = macrosFor(obj.Restaurant, obj.Cuisine);
   const override = parseMacrosOverride(obj.Macros_Override);
@@ -380,7 +418,8 @@ const deals = rows.map((r, i) => {
     neighborhood: obj.Neighborhood,
     deal: obj.Deal,
     timeWindow: obj.Time_Window,
-    price: obj.Price,
+    price: normalizePrice(obj.Price, obj.Deal),
+    cadence,
     cuisine: obj.Cuisine,
     category: obj.Category,
     sourceUrl: obj.Source_URL,
@@ -442,6 +481,7 @@ export type Deal = {
   deal: string;
   timeWindow: string;
   price: string;
+  cadence: "day-specific" | "everyday";
   cuisine: string;
   category: string;
   sourceUrl: string;
