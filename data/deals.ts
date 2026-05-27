@@ -1843,6 +1843,93 @@ export const deals: Deal[] = [
       "Sat",
       "Sun"
     ],
+    "restaurant": "Wingstop on DoorDash",
+    "neighborhood": "App (anywhere LA)",
+    "deal": "15% off pickup orders $15+",
+    "timeWindow": "All day",
+    "price": "Up to $15 off",
+    "cuisine": "Wings",
+    "category": "Delivery App",
+    "sourceUrl": "https://www.doordash.com/store/wingstop",
+    "verified": true,
+    "notes": "Valid through 6/27/2026. Pickup only.",
+    "meals": [
+      "breakfast",
+      "lunch",
+      "dinner",
+      "late_night"
+    ]
+  },
+  {
+    "id": 86,
+    "day": "Daily",
+    "days": [
+      "Mon",
+      "Tue",
+      "Wed",
+      "Thu",
+      "Fri",
+      "Sat",
+      "Sun"
+    ],
+    "restaurant": "DoorDash Deals Tab",
+    "neighborhood": "App (anywhere LA)",
+    "deal": "Restaurant-specific BOGOs and free items rotate daily (Popeyes 3pc tenders BOGO recurring)",
+    "timeWindow": "All day",
+    "price": "Free with $15+ orders",
+    "cuisine": "Delivery",
+    "category": "Delivery App",
+    "sourceUrl": "https://www.doordash.com/en/near-me/category/bogo-deals",
+    "verified": true,
+    "notes": "Open app → Deals tab. Local + personalized. Refresh daily.",
+    "meals": [
+      "breakfast",
+      "lunch",
+      "dinner",
+      "late_night"
+    ]
+  },
+  {
+    "id": 87,
+    "day": "Daily",
+    "days": [
+      "Mon",
+      "Tue",
+      "Wed",
+      "Thu",
+      "Fri",
+      "Sat",
+      "Sun"
+    ],
+    "restaurant": "Uber Eats Offers Tab",
+    "neighborhood": "App (anywhere LA)",
+    "deal": "BOGO + free item + % off on participating LA restaurants",
+    "timeWindow": "All day",
+    "price": "Free items / % off",
+    "cuisine": "Delivery",
+    "category": "Delivery App",
+    "sourceUrl": "https://www.ubereats.com/promo",
+    "verified": true,
+    "notes": "Open app → Account → Promotions. Refreshes weekly.",
+    "meals": [
+      "breakfast",
+      "lunch",
+      "dinner",
+      "late_night"
+    ]
+  },
+  {
+    "id": 88,
+    "day": "Daily",
+    "days": [
+      "Mon",
+      "Tue",
+      "Wed",
+      "Thu",
+      "Fri",
+      "Sat",
+      "Sun"
+    ],
     "restaurant": "Uber Eats new user",
     "neighborhood": "App (first order)",
     "deal": "$10 off your first order of $20+ (code: affeats10us526)",
@@ -1861,7 +1948,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 86,
+    "id": 89,
     "day": "Daily",
     "days": [
       "Mon",
@@ -1890,7 +1977,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 87,
+    "id": 90,
     "day": "Daily",
     "days": [
       "Mon",
@@ -1917,7 +2004,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 88,
+    "id": 91,
     "day": "Daily",
     "days": [
       "Mon",
@@ -1944,7 +2031,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 89,
+    "id": 92,
     "day": "Daily",
     "days": [
       "Mon",
@@ -1970,7 +2057,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 90,
+    "id": 93,
     "day": "Daily",
     "days": [
       "Mon",
@@ -1996,7 +2083,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 91,
+    "id": 94,
     "day": "Daily",
     "days": [
       "Mon",
@@ -2022,7 +2109,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 92,
+    "id": 95,
     "day": "Daily",
     "days": [
       "Mon",
@@ -2048,7 +2135,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 93,
+    "id": 96,
     "day": "Daily",
     "days": [
       "Mon",
@@ -2074,7 +2161,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 94,
+    "id": 97,
     "day": "Daily",
     "days": [
       "Mon",
@@ -2100,7 +2187,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 95,
+    "id": 98,
     "day": "Daily",
     "days": [
       "Mon",
@@ -2126,7 +2213,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 96,
+    "id": 99,
     "day": "Daily",
     "days": [
       "Mon",
@@ -2152,7 +2239,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 97,
+    "id": 100,
     "day": "Daily",
     "days": [
       "Mon",
@@ -2178,7 +2265,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 98,
+    "id": 101,
     "day": "Daily",
     "days": [
       "Mon",
@@ -2204,7 +2291,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 99,
+    "id": 102,
     "day": "Daily",
     "days": [
       "Mon",
@@ -2230,7 +2317,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 100,
+    "id": 103,
     "day": "Daily",
     "days": [
       "Mon",
@@ -2256,7 +2343,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 101,
+    "id": 104,
     "day": "Daily",
     "days": [
       "Mon",
@@ -2282,7 +2369,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 102,
+    "id": 105,
     "day": "Daily",
     "days": [
       "Mon",
@@ -2308,7 +2395,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 103,
+    "id": 106,
     "day": "Daily",
     "days": [
       "Mon",
@@ -2334,7 +2421,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 104,
+    "id": 107,
     "day": "Daily",
     "days": [
       "Mon",
@@ -2361,7 +2448,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 105,
+    "id": 108,
     "day": "Daily",
     "days": [
       "Mon",
@@ -2387,7 +2474,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 106,
+    "id": 109,
     "day": "Daily",
     "days": [
       "Mon",
@@ -2414,7 +2501,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 107,
+    "id": 110,
     "day": "Daily",
     "days": [
       "Mon",
@@ -2440,7 +2527,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 108,
+    "id": 111,
     "day": "Daily",
     "days": [
       "Mon",
@@ -2466,7 +2553,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 109,
+    "id": 112,
     "day": "Daily",
     "days": [
       "Mon",
@@ -2492,7 +2579,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 110,
+    "id": 113,
     "day": "Daily",
     "days": [
       "Mon",
@@ -2520,7 +2607,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 111,
+    "id": 114,
     "day": "Daily",
     "days": [
       "Mon",
@@ -2546,7 +2633,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 112,
+    "id": 115,
     "day": "Daily",
     "days": [
       "Mon",
@@ -2572,7 +2659,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 113,
+    "id": 116,
     "day": "Daily",
     "days": [
       "Mon",
@@ -2598,7 +2685,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 114,
+    "id": 117,
     "day": "Daily",
     "days": [
       "Mon",
@@ -2625,7 +2712,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 115,
+    "id": 118,
     "day": "Daily",
     "days": [
       "Mon",
@@ -2651,7 +2738,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 116,
+    "id": 119,
     "day": "Daily",
     "days": [
       "Mon",
@@ -2677,7 +2764,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 117,
+    "id": 120,
     "day": "Daily",
     "days": [
       "Mon",
@@ -2703,7 +2790,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 118,
+    "id": 121,
     "day": "Daily",
     "days": [
       "Mon",
@@ -2729,7 +2816,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 119,
+    "id": 122,
     "day": "Daily",
     "days": [
       "Mon",
@@ -2756,7 +2843,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 120,
+    "id": 123,
     "day": "Daily",
     "days": [
       "Mon",
@@ -2782,7 +2869,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 121,
+    "id": 124,
     "day": "Weekdays",
     "days": [
       "Mon",
@@ -2806,7 +2893,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 122,
+    "id": 125,
     "day": "Weekdays",
     "days": [
       "Mon",
@@ -2830,7 +2917,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 123,
+    "id": 126,
     "day": "Weekdays",
     "days": [
       "Mon",
@@ -2855,7 +2942,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 124,
+    "id": 127,
     "day": "Weekdays",
     "days": [
       "Mon",
@@ -2879,7 +2966,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 125,
+    "id": 128,
     "day": "Weekdays",
     "days": [
       "Mon",
@@ -2903,7 +2990,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 126,
+    "id": 129,
     "day": "Weekdays",
     "days": [
       "Mon",
@@ -2927,7 +3014,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 127,
+    "id": 130,
     "day": "Weekdays",
     "days": [
       "Mon",
@@ -2952,7 +3039,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 128,
+    "id": 131,
     "day": "Weekdays",
     "days": [
       "Mon",
@@ -2976,7 +3063,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 129,
+    "id": 132,
     "day": "Weekdays",
     "days": [
       "Mon",
@@ -3001,7 +3088,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 130,
+    "id": 133,
     "day": "Weekdays",
     "days": [
       "Mon",
@@ -3025,7 +3112,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 131,
+    "id": 134,
     "day": "Weekdays",
     "days": [
       "Mon",
@@ -3049,7 +3136,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 132,
+    "id": 135,
     "day": "Weekdays",
     "days": [
       "Mon",
@@ -3073,7 +3160,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 133,
+    "id": 136,
     "day": "Weekdays",
     "days": [
       "Mon",
@@ -3097,7 +3184,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 134,
+    "id": 137,
     "day": "Weekdays",
     "days": [
       "Mon",
@@ -3121,7 +3208,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 135,
+    "id": 138,
     "day": "Weekdays",
     "days": [
       "Mon",
@@ -3147,7 +3234,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 136,
+    "id": 139,
     "day": "Weekdays",
     "days": [
       "Mon",
@@ -3171,7 +3258,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 137,
+    "id": 140,
     "day": "Weekdays",
     "days": [
       "Mon",
@@ -3195,7 +3282,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 138,
+    "id": 141,
     "day": "Weekdays",
     "days": [
       "Mon",
@@ -3221,7 +3308,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 139,
+    "id": 142,
     "day": "Weekdays",
     "days": [
       "Mon",
@@ -3245,7 +3332,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 140,
+    "id": 143,
     "day": "Weekdays",
     "days": [
       "Mon",
@@ -3269,7 +3356,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 141,
+    "id": 144,
     "day": "Weekdays",
     "days": [
       "Mon",
@@ -3293,7 +3380,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 142,
+    "id": 145,
     "day": "Weekdays",
     "days": [
       "Mon",
@@ -3317,7 +3404,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 143,
+    "id": 146,
     "day": "Weekends",
     "days": [
       "Sat",
@@ -3338,7 +3425,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 144,
+    "id": 147,
     "day": "Weekends",
     "days": [
       "Sat",
@@ -3359,7 +3446,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 145,
+    "id": 148,
     "day": "Weekends",
     "days": [
       "Sat",
@@ -3380,7 +3467,7 @@ export const deals: Deal[] = [
     ]
   },
   {
-    "id": 146,
+    "id": 149,
     "day": "Weekends",
     "days": [
       "Sat",
