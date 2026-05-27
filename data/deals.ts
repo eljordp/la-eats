@@ -1774,6 +1774,12 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.redrobin.com/the-big-yummm",
     "verified": true,
     "notes": "Launched Jan 2026. Higher tiers $14.99 & $16.99. $5 Coors Light / $8 House Marg all-day.",
+    "traits": [
+      "pickup",
+      "solo meal",
+      "under $10"
+    ],
+    "confidence": "confirmed",
     "meals": [
       "lunch",
       "dinner"
@@ -1805,6 +1811,12 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.chilis.com/menu",
     "verified": true,
     "notes": "Higher tiers $14.99 / $16.99. Local price may vary slightly.",
+    "traits": [
+      "pickup",
+      "solo meal",
+      "cheap protein"
+    ],
+    "confidence": "confirmed",
     "meals": [
       "lunch",
       "dinner"
@@ -1836,6 +1848,12 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.fastfoodpost.com/checkers-rallys-debuts-new-4-unbeatable-meal-deal/",
     "verified": true,
     "notes": "GloRilla variant adds Glo's BBQ Jacked Burger. Limited time.",
+    "traits": [
+      "drive-thru",
+      "solo meal",
+      "under $10"
+    ],
+    "confidence": "confirmed",
     "meals": [
       "lunch",
       "dinner"
@@ -2014,6 +2032,13 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.tomsjrburger.com/menu",
     "verified": true,
     "notes": "Monday $9.99. Other days $10.99. Tax not included.",
+    "traits": [
+      "drive-thru",
+      "solo meal",
+      "cheap protein",
+      "under $10"
+    ],
+    "confidence": "confirmed",
     "meals": [
       "lunch",
       "dinner"
@@ -2045,6 +2070,12 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.tomsjrburger.com/menu",
     "verified": true,
     "notes": "Mon-Sun $10.99 (Mon special $9.99 — see Monday row).",
+    "traits": [
+      "drive-thru",
+      "solo meal",
+      "cheap protein"
+    ],
+    "confidence": "confirmed",
     "meals": [
       "lunch",
       "dinner"
@@ -2132,6 +2163,13 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.in-n-out.com/menu/nutrition-info",
     "verified": true,
     "notes": "Hamburger 240 cal / 13g protein / 11g carbs. Cheeseburger 330 cal. Double-Double 520 cal / 33g protein. Not the cheapest but great macros.",
+    "traits": [
+      "drive-thru",
+      "solo meal",
+      "cheap protein",
+      "under $10"
+    ],
+    "confidence": "confirmed",
     "meals": [
       "lunch",
       "dinner"
@@ -2206,6 +2244,7 @@ export const deals: Deal[] = [
     "verifiedAt": "2026-05-27",
     "expiresAt": "2026-06-27",
     "traits": [
+      "pickup",
       "cheap protein",
       "solo meal"
     ],

@@ -38,7 +38,30 @@ const MEAL_KEYS: (Meal | "all")[] = ["all", "breakfast", "lunch", "dinner", "lat
 
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const;
 
-const LAZY_CATEGORIES = new Set(["Delivery App", "Voucher App"]);
+const APP_CATEGORIES = new Set(["Delivery App", "Voucher App"]);
+const LAZY_CATEGORY_HINTS = new Set([
+  "Chain",
+  "Combo",
+  "Macro-Friendly",
+  "Coffee Deal",
+  "Taco",
+  "Taco Tuesday",
+  "Lunch",
+]);
+
+const LAZY_FOOD_SIGNAL =
+  /bagel|bowl|breakfast|burger|burrito|carne|cheeseburger|chicken|combo|dog|dumpling|fries|gyro|hot dog|karaage|meal|noodle|pizza|plate|protein|ramen|roll|salad|sandwich|shabu|slice|sushi|taco|tender|wing|wrap/;
+const DINE_IN_ONLY_SIGNAL = /dine-?in/;
+const DRINK_ONLY_SIGNAL = /beer|cocktail|draft|margarita|martini|oyster|sake|spritz|wine/;
+const GOING_OUT_CATEGORIES = new Set([
+  "AYCE",
+  "AYCE/Lunch",
+  "Brunch",
+  "Drink Deal",
+  "Happy Hour",
+  "Late Night",
+  "Set Menu",
+]);
 
 const GEO_STORAGE_KEY = "la-eats:user-coords";
 
@@ -51,6 +74,10 @@ type QuickFilter =
   | "under_10"
   | "open_now"
   | "solo"
+  | "pickup"
+  | "walkable"
+  | "drive_thru"
+  | "app_deals"
   | "date"
   | "late_night";
 
@@ -66,6 +93,10 @@ const QUICK_FILTERS: { key: QuickFilter; label: string }[] = [
   { key: "under_10", label: "Under $10" },
   { key: "open_now", label: "Open now" },
   { key: "solo", label: "Solo meal" },
+  { key: "pickup", label: "Pickup" },
+  { key: "walkable", label: "Walkable" },
+  { key: "drive_thru", label: "Drive-thru" },
+  { key: "app_deals", label: "App deals" },
   { key: "date", label: "Date spot" },
   { key: "late_night", label: "Late night" },
 ];
@@ -124,7 +155,7 @@ function priceValue(p: string): number {
 }
 
 function dealText(deal: Deal): string {
-  return `${deal.restaurant} ${deal.cuisine} ${deal.category} ${deal.deal} ${deal.notes} ${
+  return `${deal.restaurant} ${deal.cuisine} ${deal.category} ${deal.deal} ${deal.timeWindow} ${deal.notes} ${
     deal.traits?.join(" ") ?? ""
   }`.toLowerCase();
 }
@@ -152,6 +183,28 @@ function isSoloMeal(deal: Deal): boolean {
   );
 }
 
+function hasLazyFoodSignal(deal: Deal): boolean {
+  return LAZY_FOOD_SIGNAL.test(dealText(deal));
+}
+
+function isPickupDeal(deal: Deal): boolean {
+  return hasTrait(deal, "pickup") || /pickup|online order|to-go|takeout|in-app|\bapp\b/.test(dealText(deal));
+}
+
+function isWalkableDeal(deal: Deal): boolean {
+  return (
+    hasTrait(deal, "walkable") ||
+    (!APP_CATEGORIES.has(deal.category) && isUnderTen(deal) && hasLazyFoodSignal(deal))
+  );
+}
+
+function isDriveThruDeal(deal: Deal): boolean {
+  return (
+    hasTrait(deal, "drive-thru") ||
+    /drive.?thru|drive.?through|in-n-out|checkers|rally|chili|red robin|tom's jr|burger/.test(dealText(deal))
+  );
+}
+
 function isDateSpot(deal: Deal): boolean {
   return (
     hasTrait(deal, "date spot") ||
@@ -165,9 +218,28 @@ function passesQuickFilter(deal: Deal, filter: QuickFilter): boolean {
   if (filter === "under_10") return isUnderTen(deal);
   if (filter === "open_now") return isActiveNow(deal.timeWindow);
   if (filter === "solo") return isSoloMeal(deal);
+  if (filter === "pickup") return isPickupDeal(deal);
+  if (filter === "walkable") return isWalkableDeal(deal);
+  if (filter === "drive_thru") return isDriveThruDeal(deal);
+  if (filter === "app_deals") return deal.category === "Delivery App";
   if (filter === "date") return isDateSpot(deal);
   if (filter === "late_night") return deal.meals.includes("late_night");
   return true;
+}
+
+function isLazyDeal(deal: Deal): boolean {
+  if (deal.category === "Delivery App") return true;
+  if (deal.category === "Voucher App") return false;
+  if (hasTrait(deal, "pickup") || hasTrait(deal, "drive-thru") || hasTrait(deal, "walkable")) return true;
+  if (DINE_IN_ONLY_SIGNAL.test(dealText(deal))) return false;
+  if (GOING_OUT_CATEGORIES.has(deal.category)) return false;
+  if (DRINK_ONLY_SIGNAL.test(dealText(deal)) && !hasLazyFoodSignal(deal)) return false;
+  if (LAZY_CATEGORY_HINTS.has(deal.category) && hasLazyFoodSignal(deal)) return true;
+  return (
+    isPickupDeal(deal) ||
+    isDriveThruDeal(deal) ||
+    (isSoloMeal(deal) && hasLazyFoodSignal(deal) && (isUnderTen(deal) || isCheapProtein(deal)))
+  );
 }
 
 function bestValueScore(deal: Deal, miles: number | null, mode: Mode): number {
@@ -186,8 +258,11 @@ function bestValueScore(deal: Deal, miles: number | null, mode: Mode): number {
   if (isCheapProtein(deal)) score += 8;
   if (isUnderTen(deal)) score += 5;
   if (isSoloMeal(deal)) score += 3;
+  if (mode === "lazy" && isPickupDeal(deal)) score += 5;
+  if (mode === "lazy" && isDriveThruDeal(deal)) score += 4;
+  if (mode === "lazy" && isWalkableDeal(deal)) score += 4;
   if (deal.confidence === "confirmed") score += 6;
-  if (deal.confidence === "check app") score += mode === "lazy" ? 1 : -2;
+  if (deal.confidence === "check app") score += mode === "lazy" ? -3 : -2;
   if (deal.verifiedAt) {
     const age = -daysFromToday(deal.verifiedAt);
     if (age <= 14) score += 4;
@@ -195,7 +270,7 @@ function bestValueScore(deal: Deal, miles: number | null, mode: Mode): number {
   } else {
     score -= 2;
   }
-  if (mode === "out" && miles != null) {
+  if (miles != null) {
     if (miles <= 2) score += 12;
     else if (miles <= 5) score += 8;
     else if (miles <= 10) score += 4;
@@ -206,7 +281,7 @@ function bestValueScore(deal: Deal, miles: number | null, mode: Mode): number {
 }
 
 function mapsUrl(deal: Deal): string | null {
-  if (LAZY_CATEGORIES.has(deal.category) || deal.neighborhood.startsWith("App")) return null;
+  if (APP_CATEGORIES.has(deal.category) || deal.neighborhood.startsWith("App")) return null;
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
     `${deal.restaurant} ${deal.neighborhood} Los Angeles`
   )}`;
@@ -355,9 +430,9 @@ export default function DealsClient({ allDeals }: Props) {
   const categories = useMemo(() => {
     const set = new Set<string>();
     for (const d of allDeals) {
-      const isLazyCat = LAZY_CATEGORIES.has(d.category);
-      if (mode === "lazy" && !isLazyCat) continue;
-      if (mode === "out" && isLazyCat) continue;
+      const isAppCat = APP_CATEGORIES.has(d.category);
+      if (mode === "lazy" && !isLazyDeal(d)) continue;
+      if (mode === "out" && isAppCat) continue;
       set.add(d.category);
     }
     return ["All", ...[...set].sort((a, b) => a.localeCompare(b))];
@@ -367,10 +442,9 @@ export default function DealsClient({ allDeals }: Props) {
   const baseFiltered = useMemo(() => {
     const q = query.trim().toLowerCase();
     return allDeals.filter((d) => {
-      // Mode filter: Lazy mode shows ONLY delivery/voucher; Going Out hides them.
-      const isLazyCat = LAZY_CATEGORIES.has(d.category);
-      if (mode === "lazy" && !isLazyCat) return false;
-      if (mode === "out" && isLazyCat) return false;
+      const isAppCat = APP_CATEGORIES.has(d.category);
+      if (mode === "lazy" && !isLazyDeal(d)) return false;
+      if (mode === "out" && isAppCat) return false;
 
       if (isExpired(d)) return false;
       if (!d.days.includes(day)) return false;
@@ -405,7 +479,7 @@ export default function DealsClient({ allDeals }: Props) {
     });
   }, [baseFiltered, fitsToday, remaining]);
 
-  // Per-deal distance (in miles) — only when we have user coords and we're not in lazy mode.
+  // Per-deal distance (in miles) when we have user coords.
   const distancesById = useMemo(() => {
     const map = new Map<number, number | null>();
     if (!coords) return map;
@@ -416,7 +490,7 @@ export default function DealsClient({ allDeals }: Props) {
     return map;
   }, [filtered, coords]);
 
-  const distanceSortActive = !!coords && mode === "out";
+  const distanceSortActive = !!coords;
 
   const sorted = useMemo(() => {
     if (sortMode === "distance" && distanceSortActive) {
@@ -473,7 +547,7 @@ export default function DealsClient({ allDeals }: Props) {
           </h1>
           <p className="mt-2 text-[14px] sm:text-[15px] text-[var(--color-ink-2)] max-w-xl leading-relaxed">
             Today&rsquo;s best food deals, ranked by value, timing, distance, and
-            whether the promo needs a quick app check.
+            how much effort they take.
           </p>
 
           {hydrated && (
@@ -529,6 +603,7 @@ export default function DealsClient({ allDeals }: Props) {
               onChange={(nextMode) => {
                 setMode(nextMode);
                 setCategory("All");
+                setNeighborhood("All");
               }}
             />
             {distanceSortActive && (
@@ -673,6 +748,15 @@ export default function DealsClient({ allDeals }: Props) {
                 use location
               </button>
             )}
+            {!distanceSortActive && mode === "lazy" && (
+              <button
+                type="button"
+                onClick={requestLocation}
+                className="hidden sm:inline-flex shrink-0 rounded-full border border-[var(--color-rule)] px-3 py-1.5 text-[11px] uppercase tracking-[0.16em] text-[var(--color-clay)] hover:border-[var(--color-clay)]"
+              >
+                nearby lazy
+              </button>
+            )}
           </div>
 
           <div className="flex items-center gap-2 overflow-x-auto no-scrollbar -mx-1 px-1">
@@ -776,7 +860,7 @@ export default function DealsClient({ allDeals }: Props) {
                   key={d.id}
                   deal={d}
                   miles={distancesById.get(d.id) ?? null}
-                  showDistance={mode === "out" && !!coords}
+                  showDistance={!!coords}
                   isRecommended={sortMode === "best" && idx === 0}
                   valueScore={bestValueScore(d, distancesById.get(d.id) ?? null, mode)}
                   onEat={handleEatDeal}
