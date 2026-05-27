@@ -498,7 +498,7 @@ export default function DealsClient({ allDeals }: Props) {
       };
       saveConsumed(next);
       setConsumed(next);
-      setToast(`Added ${deal.macros.cal} cal · ${deal.macros.protein}g`);
+      setToast(`Tracked ${deal.macros.cal} cal · ${deal.macros.protein}g protein`);
     },
     [consumed.cal, consumed.protein]
   );
@@ -765,7 +765,7 @@ export default function DealsClient({ allDeals }: Props) {
               {targets ? (
                 <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 text-2xs uppercase tracking-[0.18em] text-[var(--color-muted)]">
                   <span className="font-serif italic normal-case tracking-normal text-[15px] text-[var(--color-ink-2)]">
-                    Today
+                    Tracked today
                   </span>
                   <span>
                     <span className="text-[var(--color-ink)]">{consumed.cal}</span>{" "}
@@ -779,7 +779,7 @@ export default function DealsClient({ allDeals }: Props) {
                 </div>
               ) : (
                 <span className="text-2xs uppercase tracking-[0.18em] text-[var(--color-muted)]">
-                  Set a daily macro target
+                  Track calories + protein
                 </span>
               )}
               <div className="flex items-center gap-3">
@@ -797,7 +797,7 @@ export default function DealsClient({ allDeals }: Props) {
                   onClick={() => setTargetsOpen(true)}
                   className="text-2xs uppercase tracking-[0.18em] text-[var(--color-clay)] underline decoration-[var(--color-clay)]/30 underline-offset-2 hover:decoration-[var(--color-clay)]"
                 >
-                  {targets ? "Edit macros" : "Set macros"}
+                  {targets ? "Edit target" : "Set target"}
                 </button>
               </div>
             </div>
@@ -815,7 +815,7 @@ export default function DealsClient({ allDeals }: Props) {
       </header>
 
       {/* Filters */}
-      <section className="px-5 sm:px-8 lg:px-12 sticky top-0 z-20 bg-[var(--color-paper)]/95 backdrop-blur supports-[backdrop-filter]:bg-[var(--color-paper)]/80 border-b border-[var(--color-rule)]">
+      <section className="px-5 sm:px-8 lg:px-12 bg-[var(--color-paper)] border-b border-[var(--color-rule)]">
         <div className="mx-auto max-w-3xl py-3 sm:py-4 flex flex-col gap-3">
           {/* Mode toggle */}
           <div className="flex items-center justify-between gap-3">
@@ -888,7 +888,7 @@ export default function DealsClient({ allDeals }: Props) {
             })}
           </div>
 
-          {/* Meal tabs + Fits today chip */}
+          {/* Meal tabs + target chip */}
           <div className="flex items-center gap-1 overflow-x-auto no-scrollbar -mx-1 px-1">
             {MEAL_KEYS.map((m) => {
               const active = m === meal;
@@ -922,11 +922,11 @@ export default function DealsClient({ allDeals }: Props) {
                 ].join(" ")}
                 title={
                   targets
-                    ? "Only show deals that fit today's remaining macros"
-                    : "Set a macro target first"
+                    ? "Only show deals that fit your remaining calories and protein"
+                    : "Set a calories and protein target first"
                 }
               >
-                Fits today
+                {targets ? "Fits target" : "Set target"}
               </button>
             </div>
           </div>
@@ -1428,7 +1428,7 @@ function DealCard({
                 onClick={() => onEat(deal)}
                 className="rounded-full border border-[var(--color-rule)] px-3 py-1 text-[11px] uppercase tracking-[0.16em] text-[var(--color-ink-2)] hover:border-[var(--color-ink)] hover:text-[var(--color-ink)] transition"
               >
-                I&rsquo;ll eat this
+                Track meal
               </button>
             )}
             <button
