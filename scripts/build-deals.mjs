@@ -318,6 +318,43 @@ function inferMeals(deal) {
   return order.filter((m) => set.has(m));
 }
 
+// Spec confidence values: verified | ad-only | unconfirmed.
+// JP also writes "confirmed" and "check app" in the CSV — normalize to spec.
+const CONFIDENCE_MAP = {
+  verified: "verified",
+  "ad-only": "ad-only",
+  unconfirmed: "unconfirmed",
+  // JP's CSV vocabulary
+  confirmed: "verified",
+  "check app": "ad-only",
+};
+
+function parseConfidence(cell) {
+  const v = (cell || "").trim().toLowerCase();
+  if (!v) return undefined;
+  return CONFIDENCE_MAP[v] || undefined;
+}
+
+function parseTraits(cell) {
+  return (cell || "")
+    .split(/[,|]/)
+    .map((t) => t.trim().toLowerCase())
+    .filter(Boolean);
+}
+
+function parseMacrosOverride(cell) {
+  if (!cell) return undefined;
+  const m = String(cell).match(/^\s*(\d+)\s*:\s*(\d+)\s*$/);
+  if (!m) return undefined;
+  return { cal: parseInt(m[1], 10), protein: parseInt(m[2], 10) };
+}
+
+function isoOrUndefined(cell) {
+  const v = (cell || "").trim();
+  if (!v) return undefined;
+  return v;
+}
+
 const missingMacros = new Set();
 
 const deals = rows.map((r, i) => {
@@ -325,11 +362,9 @@ const deals = rows.map((r, i) => {
   for (const k of Object.keys(idx)) obj[k] = (r[idx[k]] || "").trim();
   const { days, oneTimeDate } = normalizeDays(obj.Day);
   const meals = inferMeals(obj);
-  const macros = macrosFor(obj.Restaurant, obj.Cuisine);
-  const traits = (obj.Traits || "")
-    .split("|")
-    .map((t) => t.trim())
-    .filter(Boolean);
+  const baseline = macrosFor(obj.Restaurant, obj.Cuisine);
+  const override = parseMacrosOverride(obj.Macros_Override);
+  const macros = override || baseline;
   if (
     !restaurantOverrides[obj.Restaurant] &&
     !cuisineMacros[obj.Cuisine] &&
@@ -337,11 +372,10 @@ const deals = rows.map((r, i) => {
   ) {
     missingMacros.add(obj.Cuisine);
   }
-  return {
+  const deal = {
     id: i + 1,
     day: obj.Day,
     days,
-    oneTimeDate,
     restaurant: obj.Restaurant,
     neighborhood: obj.Neighborhood,
     deal: obj.Deal,
@@ -352,13 +386,15 @@ const deals = rows.map((r, i) => {
     sourceUrl: obj.Source_URL,
     verified: (obj.Verified || "").toLowerCase() === "yes",
     notes: obj.Notes,
-    verifiedAt: obj.Last_Verified || undefined,
-    expiresAt: obj.Expires || undefined,
-    traits: traits.length ? traits : undefined,
-    confidence: obj.Confidence || undefined,
+    lastVerified: isoOrUndefined(obj.Last_Verified),
+    expires: isoOrUndefined(obj.Expires),
+    traits: parseTraits(obj.Traits),
+    confidence: parseConfidence(obj.Confidence),
     meals,
     macros,
   };
+  if (oneTimeDate) deal.oneTimeDate = oneTimeDate;
+  return deal;
 });
 
 // Sanity stats
@@ -394,8 +430,10 @@ export type Meal = "breakfast" | "lunch" | "dinner" | "late_night";
 
 export type Macros = { cal: number; protein: number };
 
+export type Confidence = "verified" | "ad-only" | "unconfirmed";
+
 export type Deal = {
-  id: number;
+  id: string | number;
   day: string;
   days: string[]; // ["Mon","Tue",...]
   oneTimeDate?: string; // YYYY-MM-DD
@@ -409,12 +447,13 @@ export type Deal = {
   sourceUrl: string;
   verified: boolean;
   notes: string;
-  verifiedAt?: string;
-  expiresAt?: string;
-  traits?: string[];
-  confidence?: string;
+  lastVerified?: string; // YYYY-MM-DD
+  expires?: string; // YYYY-MM-DD
+  traits: string[];
+  confidence?: Confidence;
   meals: Meal[];
   macros?: Macros;
+  isPersonal?: boolean;
 };
 
 export const deals: Deal[] = ${JSON.stringify(deals, null, 2)};

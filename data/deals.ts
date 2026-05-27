@@ -5,8 +5,10 @@ export type Meal = "breakfast" | "lunch" | "dinner" | "late_night";
 
 export type Macros = { cal: number; protein: number };
 
+export type Confidence = "verified" | "ad-only" | "unconfirmed";
+
 export type Deal = {
-  id: number;
+  id: string | number;
   day: string;
   days: string[]; // ["Mon","Tue",...]
   oneTimeDate?: string; // YYYY-MM-DD
@@ -20,12 +22,13 @@ export type Deal = {
   sourceUrl: string;
   verified: boolean;
   notes: string;
-  verifiedAt?: string;
-  expiresAt?: string;
-  traits?: string[];
-  confidence?: string;
+  lastVerified?: string; // YYYY-MM-DD
+  expires?: string; // YYYY-MM-DD
+  traits: string[];
+  confidence?: Confidence;
   meals: Meal[];
   macros?: Macros;
+  isPersonal?: boolean;
 };
 
 export const deals: Deal[] = [
@@ -45,6 +48,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.timeout.com/los-angeles/restaurants/best-bang-for-your-buck-los-angeles-restaurant-deals",
     "verified": true,
     "notes": "Wine $20/bottle add-on",
+    "traits": [],
     "meals": [
       "dinner",
       "late_night"
@@ -70,6 +74,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.lovehappyhour.com/LHH/blog/FeaturedMain/oyster-happy-hour-LA.php",
     "verified": true,
     "notes": "Upscale-spot Mon deal",
+    "traits": [],
     "meals": [
       "dinner"
     ],
@@ -94,6 +99,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.timeout.com/los-angeles/restaurants/a-guide-to-taco-tuesday-in-la",
     "verified": true,
     "notes": "Monday taco night (not Tue)",
+    "traits": [],
     "meals": [
       "dinner"
     ],
@@ -118,6 +124,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.discoverlosangeles.com/eat-drink/the-best-happy-hours-in-downtown-los-angeles",
     "verified": true,
     "notes": "All-night Monday",
+    "traits": [],
     "meals": [
       "dinner"
     ],
@@ -142,6 +149,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.timeout.com/los-angeles/bars/best-happy-hour-deals-in-los-angeles",
     "verified": true,
     "notes": "Extended Monday HH",
+    "traits": [],
     "meals": [
       "dinner"
     ],
@@ -166,6 +174,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://laist.com/news/food/best-late-night-happy-hours-in-los",
     "verified": true,
     "notes": "Super Nacho Hour Mon-Sat",
+    "traits": [],
     "meals": [
       "late_night"
     ],
@@ -190,6 +199,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.theinfatuation.com/los-angeles/guides/late-night-happy-hour-la",
     "verified": true,
     "notes": "All-night Mon",
+    "traits": [],
     "meals": [
       "dinner",
       "late_night"
@@ -215,6 +225,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.instagram.com/p/DH9if7GBD8Q/",
     "verified": true,
     "notes": "Mon-Wed varies by location. 15-wing limit. Confirm your store.",
+    "traits": [],
     "meals": [
       "lunch",
       "dinner"
@@ -240,6 +251,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.instagram.com/p/DH9if7GBD8Q/",
     "verified": true,
     "notes": "Mon-Wed varies by location. 15-wing limit. Confirm your store.",
+    "traits": [],
     "meals": [
       "lunch",
       "dinner"
@@ -265,6 +277,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.timeout.com/los-angeles/restaurants/a-guide-to-taco-tuesday-in-la",
     "verified": true,
     "notes": "Taco Tuesday all-day deal",
+    "traits": [],
     "meals": [
       "dinner"
     ],
@@ -289,6 +302,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://tacotuesday.com/10-best-taco-tuesday-deals-under-5-in-los-angeles-county/",
     "verified": true,
     "notes": "Cheapest in LA county",
+    "traits": [],
     "meals": [
       "lunch",
       "dinner"
@@ -314,6 +328,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://tacotuesday.com/10-best-taco-tuesday-deals-under-5-in-los-angeles-county/",
     "verified": true,
     "notes": "Also Glendale & Pasadena",
+    "traits": [],
     "meals": [
       "lunch",
       "dinner"
@@ -339,6 +354,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://tacotuesday.com/10-best-taco-tuesday-deals-under-5-in-los-angeles-county/",
     "verified": true,
     "notes": "Online order only",
+    "traits": [],
     "meals": [
       "lunch",
       "dinner"
@@ -364,6 +380,7 @@ export const deals: Deal[] = [
     "sourceUrl": "http://tekilahollywood.com/specials/",
     "verified": true,
     "notes": "Requires drink purchase",
+    "traits": [],
     "meals": [
       "lunch",
       "dinner"
@@ -389,6 +406,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.timeout.com/los-angeles/restaurants/a-guide-to-taco-tuesday-in-la",
     "verified": true,
     "notes": "Cash-friendly",
+    "traits": [],
     "meals": [
       "lunch",
       "dinner"
@@ -414,6 +432,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://lalaguide.com/the-best-restaurants-for-taco-tuesday-in-los-angeles/",
     "verified": true,
     "notes": "AYCE Taco Tuesday",
+    "traits": [],
     "meals": [
       "lunch",
       "dinner"
@@ -439,6 +458,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://lalaguide.com/the-best-restaurants-for-taco-tuesday-in-los-angeles/",
     "verified": true,
     "notes": "Bar scene heavy",
+    "traits": [],
     "meals": [
       "lunch",
       "dinner"
@@ -464,6 +484,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://lalaguide.com/the-best-restaurants-for-taco-tuesday-in-los-angeles/",
     "verified": true,
     "notes": "Multiple locations",
+    "traits": [],
     "meals": [
       "lunch",
       "dinner"
@@ -489,6 +510,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://lalaguide.com/the-best-restaurants-for-taco-tuesday-in-los-angeles/",
     "verified": true,
     "notes": "WeHo/SM/Westwood too",
+    "traits": [],
     "meals": [
       "lunch",
       "dinner"
@@ -514,6 +536,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://tacotuesday.com/10-best-taco-tuesday-deals-under-5-in-los-angeles-county/",
     "verified": true,
     "notes": "Multiple SoCal locations",
+    "traits": [],
     "meals": [
       "lunch",
       "dinner"
@@ -539,6 +562,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://tacotuesday.com/10-best-taco-tuesday-deals-under-5-in-los-angeles-county/",
     "verified": true,
     "notes": "Also runs Friday",
+    "traits": [],
     "meals": [
       "lunch",
       "dinner"
@@ -564,6 +588,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://tacotuesday.com/10-best-taco-tuesday-deals-under-5-in-los-angeles-county/",
     "verified": true,
     "notes": "Also Los Feliz/Palms/Culver",
+    "traits": [],
     "meals": [
       "lunch",
       "dinner"
@@ -589,6 +614,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.eatdrinkla.com/7-best-taco-tuesday-deals-los-angeles/",
     "verified": true,
     "notes": "Multiple locations",
+    "traits": [],
     "meals": [
       "dinner"
     ],
@@ -613,6 +639,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.lovehappyhour.com/LHH/blog/FeaturedMain/oyster-happy-hour-LA.php",
     "verified": true,
     "notes": "Tuesday only",
+    "traits": [],
     "meals": [
       "dinner"
     ],
@@ -637,6 +664,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://laist.com/news/food/best-late-night-happy-hours-in-los",
     "verified": true,
     "notes": "Historic French dip",
+    "traits": [],
     "meals": [
       "lunch",
       "dinner"
@@ -662,6 +690,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://laist.com/news/food/best-late-night-happy-hours-in-los",
     "verified": true,
     "notes": "Industry-friendly",
+    "traits": [],
     "meals": [
       "dinner",
       "late_night"
@@ -687,6 +716,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://laist.com/news/food/best-late-night-happy-hours-in-los",
     "verified": true,
     "notes": "Tuesday-only deal",
+    "traits": [],
     "meals": [
       "dinner",
       "late_night"
@@ -712,6 +742,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://laist.com/news/food/koreatowns-best-happy-hours",
     "verified": true,
     "notes": "Tuesday margarita night",
+    "traits": [],
     "meals": [
       "dinner"
     ],
@@ -736,6 +767,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.instagram.com/p/DH9if7GBD8Q/",
     "verified": true,
     "notes": "Some locations Mon-Wed (Fountain Valley confirmed). Mon-Tue at SD locations. Confirm yours.",
+    "traits": [],
     "meals": [
       "lunch",
       "dinner"
@@ -761,6 +793,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.lovehappyhour.com/LHH/blog/FeaturedMain/oyster-happy-hour-LA.php",
     "verified": true,
     "notes": "Wednesday only",
+    "traits": [],
     "meals": [
       "dinner"
     ],
@@ -785,6 +818,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.welikela.com/the-best-oyster-happy-hours-in-los-angeles/",
     "verified": true,
     "notes": "Rooftop vibes",
+    "traits": [],
     "meals": [
       "dinner"
     ],
@@ -809,6 +843,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.timeout.com/los-angeles/restaurants/best-bang-for-your-buck-los-angeles-restaurant-deals",
     "verified": true,
     "notes": "Beef, hot links, pork, chicken, rice, cornbread",
+    "traits": [],
     "meals": [
       "lunch",
       "dinner"
@@ -834,6 +869,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://abc7.com/post/celebrate-national-cheeseburger-day-deals-fast-food-chains-restaurants/17841491/",
     "verified": true,
     "notes": "Inside Godfrey Hotel",
+    "traits": [],
     "meals": [
       "lunch",
       "dinner"
@@ -859,6 +895,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.theinfatuation.com/los-angeles/guides/late-night-happy-hour-la",
     "verified": true,
     "notes": "Each glass $1 less than previous",
+    "traits": [],
     "meals": [
       "dinner"
     ],
@@ -883,6 +920,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://laist.com/news/food/koreatowns-best-happy-hours",
     "verified": true,
     "notes": "Wed wine special",
+    "traits": [],
     "meals": [
       "dinner"
     ],
@@ -907,6 +945,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.timeout.com/los-angeles/bars/best-happy-hour-deals-in-los-angeles",
     "verified": true,
     "notes": "Wed/Thu/Fri/Sun",
+    "traits": [],
     "meals": [
       "dinner"
     ],
@@ -931,6 +970,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.timeout.com/los-angeles/bars/best-happy-hour-deals-in-los-angeles",
     "verified": true,
     "notes": "Bar seating only Wed-Fri",
+    "traits": [],
     "meals": [
       "dinner"
     ],
@@ -955,6 +995,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.welikela.com/the-best-oyster-happy-hours-in-los-angeles/",
     "verified": true,
     "notes": "Thu-Sun",
+    "traits": [],
     "meals": [
       "dinner"
     ],
@@ -979,6 +1020,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.theinfatuation.com/los-angeles/guides/late-night-happy-hour-la",
     "verified": true,
     "notes": "Late-night Thu only",
+    "traits": [],
     "meals": [
       "late_night"
     ],
@@ -1003,6 +1045,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.timeout.com/los-angeles/bars/best-happy-hour-deals-in-los-angeles",
     "verified": true,
     "notes": "Thu-Sun",
+    "traits": [],
     "meals": [
       "dinner"
     ],
@@ -1027,6 +1070,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.theinfatuation.com/los-angeles/guides/late-night-happy-hour-la",
     "verified": true,
     "notes": "Wed-Thu late night",
+    "traits": [],
     "meals": [
       "late_night"
     ],
@@ -1051,6 +1095,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://laist.com/news/food/best-late-night-happy-hours-in-los",
     "verified": true,
     "notes": "Tue-Thu late",
+    "traits": [],
     "meals": [
       "breakfast",
       "late_night"
@@ -1066,7 +1111,6 @@ export const deals: Deal[] = [
     "days": [
       "Thu"
     ],
-    "oneTimeDate": "2026-05-28",
     "restaurant": "The Press Burger Joint",
     "neighborhood": "Tarzana (18448 Oxnard St)",
     "deal": "3-2-1 National Burger Day: $3 single (grass-fed, American cheese, grilled onions, house sauce, pickles) + $2 tallow fries + $1 soda",
@@ -1077,6 +1121,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.instagram.com/thepressburgerjoint/",
     "verified": true,
     "notes": "One day only. (818) 200-6662",
+    "traits": [],
     "meals": [
       "lunch",
       "dinner"
@@ -1084,7 +1129,8 @@ export const deals: Deal[] = [
     "macros": {
       "cal": 850,
       "protein": 35
-    }
+    },
+    "oneTimeDate": "2026-05-28"
   },
   {
     "id": 44,
@@ -1102,6 +1148,7 @@ export const deals: Deal[] = [
     "sourceUrl": "IG @slimedo",
     "verified": true,
     "notes": "Street vendor confirmed via IG. Runs Wed + Thu.",
+    "traits": [],
     "meals": [
       "lunch",
       "dinner"
@@ -1127,6 +1174,7 @@ export const deals: Deal[] = [
     "sourceUrl": "IG @slimedo",
     "verified": true,
     "notes": "Street vendor confirmed via IG. Runs Wed + Thu.",
+    "traits": [],
     "meals": [
       "lunch",
       "dinner"
@@ -1152,6 +1200,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://laist.com/news/food/koreatowns-best-happy-hours",
     "verified": true,
     "notes": "Friday michelada special",
+    "traits": [],
     "meals": [
       "dinner"
     ],
@@ -1176,6 +1225,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://laist.com/news/food/best-late-night-happy-hours-in-los",
     "verified": true,
     "notes": "Fri-Sat late",
+    "traits": [],
     "meals": [
       "late_night"
     ],
@@ -1200,6 +1250,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.timeout.com/los-angeles/bars/best-happy-hour-deals-in-los-angeles",
     "verified": true,
     "notes": "Late HH Fri-Sat",
+    "traits": [],
     "meals": [
       "late_night"
     ],
@@ -1224,6 +1275,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.theinfatuation.com/los-angeles/guides/best-happy-hour-deals-la",
     "verified": true,
     "notes": "Iconic barrel bar",
+    "traits": [],
     "meals": [
       "dinner"
     ],
@@ -1248,6 +1300,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://laist.com/news/food/best-late-night-happy-hours-in-los",
     "verified": true,
     "notes": "Fri-Sat late night",
+    "traits": [],
     "meals": [
       "late_night"
     ],
@@ -1272,6 +1325,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://laist.com/news/food/best-late-night-happy-hours-in-los",
     "verified": true,
     "notes": "Fri-Sat late",
+    "traits": [],
     "meals": [
       "late_night"
     ],
@@ -1296,6 +1350,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.timeout.com/los-angeles/bars/best-happy-hour-deals-in-los-angeles",
     "verified": true,
     "notes": "Saturday afternoon",
+    "traits": [],
     "meals": [
       "dinner"
     ],
@@ -1320,6 +1375,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.theinfatuation.com/los-angeles/guides/best-happy-hour-deals-la",
     "verified": true,
     "notes": "Extended Saturday HH",
+    "traits": [],
     "meals": [
       "dinner"
     ],
@@ -1344,6 +1400,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.timeout.com/los-angeles/bars/best-happy-hour-deals-in-los-angeles",
     "verified": true,
     "notes": "Weekend HH later",
+    "traits": [],
     "meals": [
       "dinner"
     ],
@@ -1368,6 +1425,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.timeout.com/los-angeles/bars/best-happy-hour-deals-in-los-angeles",
     "verified": true,
     "notes": "Weekend afternoon",
+    "traits": [],
     "meals": [
       "dinner"
     ],
@@ -1392,6 +1450,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.eatdrinkla.com/best-bottomless-mimosa-brunches-in-los-angeles/",
     "verified": true,
     "notes": "Sat-Sun",
+    "traits": [],
     "meals": [
       "breakfast",
       "lunch",
@@ -1418,6 +1477,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.eatdrinkla.com/best-bottomless-mimosa-brunches-in-los-angeles/",
     "verified": true,
     "notes": "Sat-Sun",
+    "traits": [],
     "meals": [
       "breakfast",
       "lunch"
@@ -1443,6 +1503,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.eatdrinkla.com/best-bottomless-mimosa-brunches-in-los-angeles/",
     "verified": true,
     "notes": "Sat-Sun view",
+    "traits": [],
     "meals": [
       "breakfast",
       "lunch",
@@ -1469,6 +1530,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.eatdrinkla.com/best-bottomless-mimosa-brunches-in-los-angeles/",
     "verified": true,
     "notes": "Sat-Sun cheapest brunch",
+    "traits": [],
     "meals": [
       "breakfast",
       "lunch"
@@ -1494,6 +1556,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.eatdrinkla.com/best-weekend-happy-hours-los-angeles/",
     "verified": true,
     "notes": "Long weekend HH",
+    "traits": [],
     "meals": [
       "lunch",
       "dinner"
@@ -1519,6 +1582,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.timeout.com/los-angeles/bars/best-happy-hour-deals-in-los-angeles",
     "verified": true,
     "notes": "Sun-Fri HH",
+    "traits": [],
     "meals": [
       "dinner"
     ],
@@ -1543,6 +1607,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.eatdrinkla.com/best-bottomless-mimosa-brunches-in-los-angeles/",
     "verified": true,
     "notes": "Sunday only",
+    "traits": [],
     "meals": [
       "breakfast",
       "lunch"
@@ -1568,6 +1633,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.eatdrinkla.com/best-bottomless-mimosa-brunches-in-los-angeles/",
     "verified": true,
     "notes": "Sunday-only brunch",
+    "traits": [],
     "meals": [
       "breakfast",
       "lunch",
@@ -1594,6 +1660,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.theinfatuation.com/los-angeles/guides/late-night-happy-hour-la",
     "verified": true,
     "notes": "All-night Sunday",
+    "traits": [],
     "meals": [
       "dinner",
       "late_night"
@@ -1619,6 +1686,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.theinfatuation.com/los-angeles/guides/downtown-la-dtla-happy-hours",
     "verified": true,
     "notes": "Industry-friendly",
+    "traits": [],
     "meals": [
       "lunch",
       "dinner"
@@ -1644,6 +1712,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.theinfatuation.com/los-angeles/guides/downtown-la-dtla-happy-hours",
     "verified": true,
     "notes": "Whole-night discount",
+    "traits": [],
     "meals": [
       "lunch",
       "dinner"
@@ -1669,6 +1738,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.theinfatuation.com/los-angeles/guides/downtown-la-dtla-happy-hours",
     "verified": true,
     "notes": "All-night HH",
+    "traits": [],
     "meals": [
       "dinner",
       "late_night"
@@ -1694,6 +1764,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.visitwesthollywood.com/stories/best-happy-hours-in-west-hollywood/",
     "verified": true,
     "notes": "Sunday pizza deal",
+    "traits": [],
     "meals": [
       "lunch",
       "dinner"
@@ -1719,6 +1790,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.timeout.com/los-angeles/bars/best-happy-hour-deals-in-los-angeles",
     "verified": true,
     "notes": "Sunday brief HH",
+    "traits": [],
     "meals": [
       "dinner"
     ],
@@ -1743,6 +1815,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://laist.com/news/food/best-late-night-happy-hours-in-los",
     "verified": true,
     "notes": "Sun-Thu late",
+    "traits": [],
     "meals": [
       "breakfast",
       "late_night"
@@ -1779,7 +1852,7 @@ export const deals: Deal[] = [
       "solo meal",
       "under $10"
     ],
-    "confidence": "confirmed",
+    "confidence": "verified",
     "meals": [
       "lunch",
       "dinner"
@@ -1816,7 +1889,7 @@ export const deals: Deal[] = [
       "solo meal",
       "cheap protein"
     ],
-    "confidence": "confirmed",
+    "confidence": "verified",
     "meals": [
       "lunch",
       "dinner"
@@ -1853,7 +1926,7 @@ export const deals: Deal[] = [
       "solo meal",
       "under $10"
     ],
-    "confidence": "confirmed",
+    "confidence": "verified",
     "meals": [
       "lunch",
       "dinner"
@@ -1885,6 +1958,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.shabuyarestaurant.com/",
     "verified": true,
     "notes": "Lunch significantly cheaper than $29.99 dinner. Price varies by location.",
+    "traits": [],
     "meals": [
       "lunch"
     ],
@@ -1915,6 +1989,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.theinfatuation.com/los-angeles/guides/best-pho-restaurants-los-angeles",
     "verified": true,
     "notes": "Tiny cafe on Western. Best pho in K-Town per Infatuation.",
+    "traits": [],
     "meals": [
       "lunch",
       "dinner"
@@ -1946,6 +2021,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.atly.com/united-states/california/los-angeles/best-pho",
     "verified": true,
     "notes": "Combo deal includes drink and roll",
+    "traits": [],
     "meals": [
       "lunch"
     ],
@@ -1976,6 +2052,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.timeout.com/los-angeles/restaurants/best-bang-for-your-buck-los-angeles-restaurant-deals",
     "verified": true,
     "notes": "Set menu = best value at Sugarfish",
+    "traits": [],
     "meals": [
       "lunch",
       "dinner"
@@ -2007,6 +2084,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.instagram.com/kozosushi_torrance_ca/",
     "verified": true,
     "notes": "25364 Crenshaw Blvd. (310) 534-4013. Limited campaign per IG.",
+    "traits": [],
     "meals": [
       "lunch",
       "dinner"
@@ -2038,7 +2116,7 @@ export const deals: Deal[] = [
       "cheap protein",
       "under $10"
     ],
-    "confidence": "confirmed",
+    "confidence": "verified",
     "meals": [
       "lunch",
       "dinner"
@@ -2075,7 +2153,7 @@ export const deals: Deal[] = [
       "solo meal",
       "cheap protein"
     ],
-    "confidence": "confirmed",
+    "confidence": "verified",
     "meals": [
       "lunch",
       "dinner"
@@ -2105,6 +2183,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.instagram.com/unclesteveysbagels/",
     "verified": true,
     "notes": "Valid through May 31 2026. Skip the $18 lunch.",
+    "traits": [],
     "meals": [
       "breakfast",
       "lunch",
@@ -2132,6 +2211,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.instagram.com/unclesteveysbagels/",
     "verified": true,
     "notes": "Valid through May 31 2026.",
+    "traits": [],
     "meals": [
       "breakfast",
       "lunch"
@@ -2169,7 +2249,7 @@ export const deals: Deal[] = [
       "cheap protein",
       "under $10"
     ],
-    "confidence": "confirmed",
+    "confidence": "verified",
     "meals": [
       "lunch",
       "dinner"
@@ -2201,13 +2281,13 @@ export const deals: Deal[] = [
     "sourceUrl": "https://help.doordash.com/en-us/merchants/article/happy-hour-discount-on-doordash",
     "verified": true,
     "notes": "DoorDash supports Happy Hour promos; exact LA restaurants are app/location personalized. Check the app around 2-5pm.",
-    "verifiedAt": "2026-05-27",
+    "lastVerified": "2026-05-27",
     "traits": [
       "open now",
       "solo meal",
       "under $10"
     ],
-    "confidence": "check app",
+    "confidence": "ad-only",
     "meals": [
       "breakfast",
       "lunch",
@@ -2241,14 +2321,14 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.doordash.com/store/wingstop",
     "verified": true,
     "notes": "Pickup only. Valid through 6/27/2026 per current listing.",
-    "verifiedAt": "2026-05-27",
-    "expiresAt": "2026-06-27",
+    "lastVerified": "2026-05-27",
+    "expires": "2026-06-27",
     "traits": [
       "pickup",
       "cheap protein",
       "solo meal"
     ],
-    "confidence": "confirmed",
+    "confidence": "verified",
     "meals": [
       "breakfast",
       "lunch",
@@ -2282,13 +2362,13 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.doordash.com/en/near-me/category/bogo-deals",
     "verified": true,
     "notes": "Open app → Deals tab. Local + personalized. Screenshot strong finds and add them as real rows.",
-    "verifiedAt": "2026-05-27",
+    "lastVerified": "2026-05-27",
     "traits": [
       "open now",
       "solo meal",
       "under $10"
     ],
-    "confidence": "check app",
+    "confidence": "ad-only",
     "meals": [
       "breakfast",
       "lunch",
@@ -2322,13 +2402,13 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.ubereats.com/promo",
     "verified": true,
     "notes": "Open app → Account → Promotions. Refreshes weekly and varies by account/address.",
-    "verifiedAt": "2026-05-27",
+    "lastVerified": "2026-05-27",
     "traits": [
       "open now",
       "solo meal",
       "under $10"
     ],
-    "confidence": "check app",
+    "confidence": "ad-only",
     "meals": [
       "breakfast",
       "lunch",
@@ -2362,12 +2442,12 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.joinhoney.com/shop/uber-eats-eater",
     "verified": true,
     "notes": "May 2026 code seen on Honey. Check current code in Account → Promotions before ordering.",
-    "verifiedAt": "2026-05-27",
-    "expiresAt": "2026-05-31",
+    "lastVerified": "2026-05-27",
+    "expires": "2026-05-31",
     "traits": [
       "solo meal"
     ],
-    "confidence": "check app",
+    "confidence": "ad-only",
     "meals": [
       "breakfast",
       "lunch",
@@ -2401,12 +2481,12 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.couponpac.com/coupon/638672/",
     "verified": true,
     "notes": "Coupon site lists DASH30NOW for new users. Verify at checkout before counting it.",
-    "verifiedAt": "2026-05-27",
-    "expiresAt": "2026-11-05",
+    "lastVerified": "2026-05-27",
+    "expires": "2026-11-05",
     "traits": [
       "solo meal"
     ],
-    "confidence": "check app",
+    "confidence": "ad-only",
     "meals": [
       "breakfast",
       "lunch",
@@ -2440,6 +2520,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.groupon.com/local/los-angeles/food-and-drink",
     "verified": true,
     "notes": "Best for date-night sit-down spots. Stack with in-app deals.",
+    "traits": [],
     "meals": [
       "lunch",
       "dinner"
@@ -2471,6 +2552,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.groupon.com/local/los-angeles/restaurants",
     "verified": true,
     "notes": "No printout needed. Pays back to your linked card.",
+    "traits": [],
     "meals": [
       "lunch",
       "dinner"
@@ -2502,6 +2584,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.groupon.com/local/los-angeles/restaurants",
     "verified": true,
     "notes": "Check before booking K-Town spots. Frequently discounted.",
+    "traits": [],
     "meals": [
       "dinner"
     ],
@@ -2532,6 +2615,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.groupon.com/local/los-angeles/restaurants",
     "verified": true,
     "notes": "Beach-area sit-downs cycle frequently.",
+    "traits": [],
     "meals": [
       "dinner"
     ],
@@ -2562,6 +2646,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.groupon.com/local/los-angeles/downtown-los/food-and-drink",
     "verified": true,
     "notes": "Downtown spots run dinner + brunch vouchers.",
+    "traits": [],
     "meals": [
       "dinner"
     ],
@@ -2592,6 +2677,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.welikela.com/the-best-oyster-happy-hours-in-los-angeles/",
     "verified": true,
     "notes": "Multiple locations",
+    "traits": [],
     "meals": [
       "dinner"
     ],
@@ -2622,6 +2708,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.welikela.com/the-best-oyster-happy-hours-in-los-angeles/",
     "verified": true,
     "notes": "Until they run out",
+    "traits": [],
     "meals": [
       "dinner"
     ],
@@ -2652,6 +2739,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.welikela.com/the-best-oyster-happy-hours-in-los-angeles/",
     "verified": true,
     "notes": "Daily",
+    "traits": [],
     "meals": [
       "dinner"
     ],
@@ -2682,6 +2770,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.theinfatuation.com/los-angeles/guides/best-happy-hour-deals-la",
     "verified": true,
     "notes": "Daily HH",
+    "traits": [],
     "meals": [
       "dinner"
     ],
@@ -2712,6 +2801,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.theinfatuation.com/los-angeles/guides/best-happy-hour-deals-la",
     "verified": true,
     "notes": "Free taco after 10pm",
+    "traits": [],
     "meals": [
       "dinner"
     ],
@@ -2742,6 +2832,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.theinfatuation.com/los-angeles/guides/best-happy-hour-deals-la",
     "verified": true,
     "notes": "Freehand Hotel rooftop",
+    "traits": [],
     "meals": [
       "dinner"
     ],
@@ -2772,6 +2863,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.timeout.com/los-angeles/bars/best-happy-hour-deals-in-los-angeles",
     "verified": true,
     "notes": "Mon-Fri 3-6pm",
+    "traits": [],
     "meals": [
       "dinner"
     ],
@@ -2802,6 +2894,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.discoverlosangeles.com/eat-drink/the-best-happy-hours-in-downtown-los-angeles",
     "verified": true,
     "notes": "Sun-Fri til 8pm",
+    "traits": [],
     "meals": [
       "dinner"
     ],
@@ -2832,6 +2925,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.eatdrinkla.com/best-weekend-happy-hours-los-angeles/",
     "verified": true,
     "notes": "Daily HH",
+    "traits": [],
     "meals": [
       "dinner"
     ],
@@ -2862,6 +2956,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.eatdrinkla.com/best-weekend-happy-hours-los-angeles/",
     "verified": true,
     "notes": "Evening Glass Off",
+    "traits": [],
     "meals": [
       "dinner"
     ],
@@ -2892,6 +2987,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://laist.com/news/food/best-late-night-happy-hours-in-los",
     "verified": true,
     "notes": "Late night every day",
+    "traits": [],
     "meals": [
       "late_night"
     ],
@@ -2922,6 +3018,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://laist.com/news/food/best-late-night-happy-hours-in-los",
     "verified": true,
     "notes": "Multiple locations",
+    "traits": [],
     "meals": [
       "late_night"
     ],
@@ -2952,6 +3049,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://laist.com/news/food/best-late-night-happy-hours-in-los",
     "verified": true,
     "notes": "Late-night sushi steal",
+    "traits": [],
     "meals": [
       "dinner",
       "late_night"
@@ -2983,6 +3081,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://laist.com/news/food/best-late-night-happy-hours-in-los",
     "verified": true,
     "notes": "Nightly",
+    "traits": [],
     "meals": [
       "late_night"
     ],
@@ -3013,6 +3112,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://laist.com/news/food/best-late-night-happy-hours-in-los",
     "verified": true,
     "notes": "Nightly late",
+    "traits": [],
     "meals": [
       "breakfast",
       "late_night"
@@ -3044,6 +3144,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.discoverlosangeles.com/eat-drink/the-best-happy-hours-in-downtown-los-angeles",
     "verified": true,
     "notes": "Inside Grand Central Market",
+    "traits": [],
     "meals": [
       "dinner"
     ],
@@ -3074,6 +3175,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.discoverlosangeles.com/eat-drink/the-best-happy-hours-in-downtown-los-angeles",
     "verified": true,
     "notes": "Inside Union Station",
+    "traits": [],
     "meals": [
       "dinner"
     ],
@@ -3104,6 +3206,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.eatdrinkla.com/best-weekend-happy-hours-los-angeles/",
     "verified": true,
     "notes": "Top floor of Nordstrom",
+    "traits": [],
     "meals": [
       "dinner"
     ],
@@ -3134,6 +3237,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://laist.com/news/food/koreatowns-best-happy-hours",
     "verified": true,
     "notes": "Sun-Thu late HH too",
+    "traits": [],
     "meals": [
       "breakfast",
       "dinner",
@@ -3166,6 +3270,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.eatdrinkla.com/best-weekend-happy-hours-los-angeles/",
     "verified": true,
     "notes": "Pier views",
+    "traits": [],
     "meals": [
       "dinner"
     ],
@@ -3196,6 +3301,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.eatdrinkla.com/best-weekend-happy-hours-los-angeles/",
     "verified": true,
     "notes": "Daily HH",
+    "traits": [],
     "meals": [
       "dinner"
     ],
@@ -3226,6 +3332,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://laist.com/news/food/koreatowns-best-happy-hours",
     "verified": true,
     "notes": "Dollar dumplings",
+    "traits": [],
     "meals": [
       "dinner"
     ],
@@ -3256,6 +3363,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://laist.com/news/food/koreatowns-best-happy-hours",
     "verified": true,
     "notes": "All-day HH",
+    "traits": [],
     "meals": [
       "lunch",
       "dinner"
@@ -3287,6 +3395,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://laist.com/news/food/koreatowns-best-happy-hours",
     "verified": true,
     "notes": "Classic LA burger",
+    "traits": [],
     "meals": [
       "dinner"
     ],
@@ -3317,6 +3426,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.theinfatuation.com/los-angeles/guides/best-happy-hour-deals-la",
     "verified": true,
     "notes": "NYC import",
+    "traits": [],
     "meals": [
       "dinner"
     ],
@@ -3347,6 +3457,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.theinfatuation.com/los-angeles/guides/best-happy-hour-deals-la",
     "verified": true,
     "notes": "Happy Hour and a Half",
+    "traits": [],
     "meals": [
       "dinner"
     ],
@@ -3377,6 +3488,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.theinfatuation.com/los-angeles/guides/best-happy-hour-deals-la",
     "verified": true,
     "notes": "French bistro deal",
+    "traits": [],
     "meals": [
       "dinner"
     ],
@@ -3407,6 +3519,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.eatdrinkla.com/best-weekend-happy-hours-los-angeles/",
     "verified": true,
     "notes": "Long HH window",
+    "traits": [],
     "meals": [
       "lunch",
       "dinner"
@@ -3438,6 +3551,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://tacotuesday.com/10-best-taco-tuesday-deals-under-5-in-los-angeles-county/",
     "verified": true,
     "notes": "Every day not just Tue",
+    "traits": [],
     "meals": [
       "late_night"
     ],
@@ -3466,6 +3580,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.timeout.com/los-angeles/bars/best-happy-hour-deals-in-los-angeles",
     "verified": true,
     "notes": "Plant-based",
+    "traits": [],
     "meals": [
       "dinner"
     ],
@@ -3494,6 +3609,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.timeout.com/los-angeles/bars/best-happy-hour-deals-in-los-angeles",
     "verified": true,
     "notes": "Long HH window",
+    "traits": [],
     "meals": [
       "dinner"
     ],
@@ -3522,6 +3638,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.theinfatuation.com/los-angeles/guides/best-happy-hour-deals-la",
     "verified": true,
     "notes": "Beer garden",
+    "traits": [],
     "meals": [
       "lunch",
       "dinner"
@@ -3551,6 +3668,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.theinfatuation.com/los-angeles/guides/best-happy-hour-deals-la",
     "verified": true,
     "notes": "Beachy bar",
+    "traits": [],
     "meals": [
       "dinner"
     ],
@@ -3579,6 +3697,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.theinfatuation.com/los-angeles/guides/best-happy-hour-deals-la",
     "verified": true,
     "notes": "Short HH but cheap",
+    "traits": [],
     "meals": [
       "dinner"
     ],
@@ -3607,6 +3726,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.theinfatuation.com/los-angeles/guides/best-happy-hour-deals-la",
     "verified": true,
     "notes": "Mon-Fri",
+    "traits": [],
     "meals": [
       "dinner"
     ],
@@ -3635,6 +3755,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.timeout.com/los-angeles/bars/best-happy-hour-deals-in-los-angeles",
     "verified": true,
     "notes": "Late-night second window",
+    "traits": [],
     "meals": [
       "dinner",
       "late_night"
@@ -3664,6 +3785,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.timeout.com/los-angeles/bars/best-happy-hour-deals-in-los-angeles",
     "verified": true,
     "notes": "5-hour HH",
+    "traits": [],
     "meals": [
       "dinner"
     ],
@@ -3692,6 +3814,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.timeout.com/los-angeles/bars/best-happy-hour-deals-in-los-angeles",
     "verified": true,
     "notes": "Two HH windows",
+    "traits": [],
     "meals": [
       "dinner",
       "late_night"
@@ -3721,6 +3844,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.theinfatuation.com/los-angeles/guides/downtown-la-dtla-happy-hours",
     "verified": true,
     "notes": "Inside Hotel Figueroa",
+    "traits": [],
     "meals": [
       "dinner"
     ],
@@ -3749,6 +3873,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.theinfatuation.com/los-angeles/guides/downtown-la-dtla-happy-hours",
     "verified": true,
     "notes": "Long HH window",
+    "traits": [],
     "meals": [
       "dinner"
     ],
@@ -3777,6 +3902,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.theinfatuation.com/los-angeles/guides/downtown-la-dtla-happy-hours",
     "verified": true,
     "notes": "Skyline views",
+    "traits": [],
     "meals": [
       "dinner"
     ],
@@ -3805,6 +3931,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.theinfatuation.com/los-angeles/guides/downtown-la-dtla-happy-hours",
     "verified": true,
     "notes": "Long weekend HH",
+    "traits": [],
     "meals": [
       "dinner"
     ],
@@ -3833,6 +3960,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.timeout.com/los-angeles/restaurants/best-bang-for-your-buck-los-angeles-restaurant-deals",
     "verified": true,
     "notes": "Tue-Fri lunch only",
+    "traits": [],
     "meals": [
       "lunch"
     ],
@@ -3861,6 +3989,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.timeout.com/los-angeles/restaurants/best-bang-for-your-buck-los-angeles-restaurant-deals",
     "verified": true,
     "notes": "Mon-Fri",
+    "traits": [],
     "meals": [
       "breakfast",
       "lunch",
@@ -3891,6 +4020,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.eatdrinkla.com/weekday-lunch-specials-los-angeles/",
     "verified": true,
     "notes": "Sherman Oaks too",
+    "traits": [],
     "meals": [
       "lunch"
     ],
@@ -3919,6 +4049,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.eatdrinkla.com/weekday-lunch-specials-los-angeles/",
     "verified": true,
     "notes": "Mon-Fri lunch",
+    "traits": [],
     "meals": [
       "lunch"
     ],
@@ -3947,6 +4078,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.eatdrinkla.com/weekday-lunch-specials-los-angeles/",
     "verified": true,
     "notes": "Daily lunch",
+    "traits": [],
     "meals": [
       "breakfast",
       "lunch",
@@ -3977,6 +4109,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.discoverlosangeles.com/eat-drink/the-best-happy-hours-in-downtown-los-angeles",
     "verified": true,
     "notes": "Historic DTLA bar",
+    "traits": [],
     "meals": [
       "dinner"
     ],
@@ -4005,6 +4138,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://laist.com/news/food/koreatowns-best-happy-hours",
     "verified": true,
     "notes": "Tue-Fri + Tue-Sat 11pm-close",
+    "traits": [],
     "meals": [
       "dinner"
     ],
@@ -4033,6 +4167,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://laist.com/news/food/koreatowns-best-happy-hours",
     "verified": true,
     "notes": "Top LA cocktail bar",
+    "traits": [],
     "meals": [
       "dinner"
     ],
@@ -4061,6 +4196,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.theinfatuation.com/los-angeles/guides/downtown-la-dtla-happy-hours",
     "verified": true,
     "notes": "Tue-Sun",
+    "traits": [],
     "meals": [
       "dinner"
     ],
@@ -4086,6 +4222,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.eatdrinkla.com/best-weekend-happy-hours-los-angeles/",
     "verified": true,
     "notes": "Weekend short HH",
+    "traits": [],
     "meals": [
       "dinner"
     ],
@@ -4111,6 +4248,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.eatdrinkla.com/best-weekend-happy-hours-los-angeles/",
     "verified": true,
     "notes": "Weekend HH",
+    "traits": [],
     "meals": [
       "dinner"
     ],
@@ -4136,6 +4274,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.eatdrinkla.com/best-weekend-happy-hours-los-angeles/",
     "verified": true,
     "notes": "Nicer-spot deal",
+    "traits": [],
     "meals": [
       "dinner"
     ],
@@ -4161,6 +4300,7 @@ export const deals: Deal[] = [
     "sourceUrl": "https://www.eatdrinkla.com/best-weekend-happy-hours-los-angeles/",
     "verified": true,
     "notes": "High-end weekend HH",
+    "traits": [],
     "meals": [
       "dinner"
     ],

@@ -1,9 +1,14 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Deal, Meal } from "@/data/deals";
 import { milesToNeighborhood } from "@/lib/distance";
-import { isActiveNow } from "@/lib/active";
+import { isActiveNow, activeStatus, type ActiveStatus } from "@/lib/active";
+import {
+  clearPersonalDeals,
+  loadPersonalDeals,
+} from "@/lib/personalDeals";
 import RestaurantAvatar from "./RestaurantAvatar";
 import MacroTargetsEditor, {
   DEFAULT_TARGETS,
@@ -15,6 +20,16 @@ import MacroTargetsEditor, {
   saveConsumed,
   saveTargets,
 } from "./MacroTargets";
+import ScreenshotIntake from "./ScreenshotIntake";
+
+const DealsMap = dynamic(() => import("./DealsMap"), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-[420px] sm:h-[480px] rounded-lg border border-[var(--color-rule)] bg-[var(--color-paper-2)] flex items-center justify-center text-[var(--color-muted)] text-sm">
+      Loading map…
+    </div>
+  ),
+});
 
 const DAY_LONG: Record<string, string> = {
   Mon: "Monday",
@@ -138,7 +153,9 @@ function daysFromToday(iso: string): number {
 }
 
 function isExpired(deal: Deal): boolean {
-  return deal.expiresAt ? daysFromToday(deal.expiresAt) < 0 : false;
+  const exp = deal.expires || deal.oneTimeDate;
+  if (!exp) return false;
+  return daysFromToday(exp) < 0;
 }
 
 function priceValue(p: string): number {
@@ -261,10 +278,11 @@ function bestValueScore(deal: Deal, miles: number | null, mode: Mode): number {
   if (mode === "lazy" && isPickupDeal(deal)) score += 5;
   if (mode === "lazy" && isDriveThruDeal(deal)) score += 4;
   if (mode === "lazy" && isWalkableDeal(deal)) score += 4;
-  if (deal.confidence === "confirmed") score += 6;
-  if (deal.confidence === "check app") score += mode === "lazy" ? -3 : -2;
-  if (deal.verifiedAt) {
-    const age = -daysFromToday(deal.verifiedAt);
+  if (deal.confidence === "verified") score += 6;
+  if (deal.confidence === "ad-only") score += mode === "lazy" ? -3 : -2;
+  if (deal.confidence === "unconfirmed") score -= 3;
+  if (deal.lastVerified) {
+    const age = -daysFromToday(deal.lastVerified);
     if (age <= 14) score += 4;
     else if (age > 45) score -= 7;
   } else {
@@ -280,12 +298,30 @@ function bestValueScore(deal: Deal, miles: number | null, mode: Mode): number {
   return Math.max(1, Math.min(99, Math.round(score)));
 }
 
-function mapsUrl(deal: Deal): string | null {
-  if (APP_CATEGORIES.has(deal.category) || deal.neighborhood.startsWith("App")) return null;
+function dealHasPhysicalAddress(deal: Deal): boolean {
+  if (APP_CATEGORIES.has(deal.category)) return false;
+  if (!deal.neighborhood) return false;
+  if (deal.neighborhood.startsWith("App")) return false;
+  if (deal.neighborhood === "Various" || deal.neighborhood === "LA") return false;
+  return true;
+}
+
+function mapsUrl(deal: Deal): string {
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
     `${deal.restaurant} ${deal.neighborhood} Los Angeles`
   )}`;
 }
+
+function shareText(deal: Deal, day: string): string {
+  const parts: string[] = [];
+  parts.push(`${deal.restaurant} (${deal.neighborhood})`);
+  if (deal.deal) parts.push(deal.deal);
+  const dayLabel = DAY_LONG[day] || day;
+  parts.push(`${dayLabel}${deal.timeWindow ? ` · ${deal.timeWindow}` : ""}`);
+  parts.push("via LA Eats — la-eats.vercel.app");
+  return parts.join("\n");
+}
+
 
 type Props = {
   allDeals: Deal[];
@@ -302,8 +338,14 @@ export default function DealsClient({ allDeals }: Props) {
   const [mode, setMode] = useState<Mode>("out");
   const [sortMode, setSortMode] = useState<SortMode>("best");
   const [quickFilter, setQuickFilter] = useState<QuickFilter>("all");
+  const [activeTraits, setActiveTraits] = useState<string[]>([]);
   const [coords, setCoords] = useState<UserCoords | null>(null);
   const [geoStatus, setGeoStatus] = useState<"idle" | "pending" | "granted" | "denied">("idle");
+  const [mapView, setMapView] = useState(false);
+  const [visibleMapIds, setVisibleMapIds] = useState<Array<string | number> | null>(null);
+  const [intakeOpen, setIntakeOpen] = useState(false);
+  const [personalDeals, setPersonalDeals] = useState<Deal[]>([]);
+  const [nowTick, setNowTick] = useState(0);
 
   // Macros state
   const [targets, setTargets] = useState<Targets | null>(null);
@@ -319,6 +361,7 @@ export default function DealsClient({ allDeals }: Props) {
     setMeal(currentMeal());
     setDateLabel(todayLongString());
     setHydrated(true);
+    setPersonalDeals(loadPersonalDeals());
 
     // Restore cached coords first (avoid re-prompt on refresh).
     try {
@@ -382,6 +425,12 @@ export default function DealsClient({ allDeals }: Props) {
     setConsumed(loadConsumed());
   }, []);
 
+  // Re-tick "Open now" labels every minute
+  useEffect(() => {
+    const t = window.setInterval(() => setNowTick((n) => n + 1), 60000);
+    return () => window.clearInterval(t);
+  }, []);
+
   // Show a transient toast.
   useEffect(() => {
     if (!toast) return;
@@ -421,44 +470,67 @@ export default function DealsClient({ allDeals }: Props) {
     setFitsToday((v) => !v);
   }
 
+  // Merge: personal deals on top, curated below
+  const mergedDeals = useMemo(() => {
+    return [...personalDeals, ...allDeals];
+  }, [personalDeals, allDeals]);
+
+  // Expiry filter (runs BEFORE day/meal/category filtering)
+  const unexpired = useMemo(() => {
+    void nowTick;
+    return mergedDeals.filter((d) => !isExpired(d));
+  }, [mergedDeals, nowTick]);
+
   const neighborhoods = useMemo(() => {
     const set = new Set<string>();
-    for (const d of allDeals) set.add(d.neighborhood);
+    for (const d of unexpired) set.add(d.neighborhood);
     return ["All", ...[...set].sort((a, b) => a.localeCompare(b))];
-  }, [allDeals]);
+  }, [unexpired]);
 
   const categories = useMemo(() => {
     const set = new Set<string>();
-    for (const d of allDeals) {
+    for (const d of unexpired) {
       const isAppCat = APP_CATEGORIES.has(d.category);
       if (mode === "lazy" && !isLazyDeal(d)) continue;
       if (mode === "out" && isAppCat) continue;
       set.add(d.category);
     }
     return ["All", ...[...set].sort((a, b) => a.localeCompare(b))];
-  }, [allDeals, mode]);
+  }, [unexpired, mode]);
+
+  const allTraits = useMemo(() => {
+    const set = new Set<string>();
+    for (const d of unexpired) {
+      for (const t of d.traits || []) set.add(t);
+    }
+    return [...set].sort((a, b) => a.localeCompare(b));
+  }, [unexpired]);
 
   // Base filter (before "fits today" macro filter).
   const baseFiltered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return allDeals.filter((d) => {
+    const traitSet = new Set(activeTraits);
+    return unexpired.filter((d) => {
       const isAppCat = APP_CATEGORIES.has(d.category);
       if (mode === "lazy" && !isLazyDeal(d)) return false;
       if (mode === "out" && isAppCat) return false;
 
-      if (isExpired(d)) return false;
       if (!d.days.includes(day)) return false;
       if (meal !== "all" && !d.meals.includes(meal)) return false;
       if (neighborhood !== "All" && d.neighborhood !== neighborhood) return false;
       if (category !== "All" && d.category !== category) return false;
       if (!passesQuickFilter(d, quickFilter)) return false;
+      if (traitSet.size > 0) {
+        const ts = d.traits || [];
+        if (!ts.some((t) => traitSet.has(t))) return false;
+      }
       if (q) {
         const hay = `${dealText(d)} ${d.neighborhood}`.toLowerCase();
         if (!hay.includes(q)) return false;
       }
       return true;
     });
-  }, [allDeals, day, meal, neighborhood, category, query, mode, quickFilter]);
+  }, [unexpired, day, meal, neighborhood, category, query, mode, quickFilter, activeTraits]);
 
   const remaining = useMemo(() => {
     if (!targets) return null;
@@ -481,7 +553,7 @@ export default function DealsClient({ allDeals }: Props) {
 
   // Per-deal distance (in miles) when we have user coords.
   const distancesById = useMemo(() => {
-    const map = new Map<number, number | null>();
+    const map = new Map<Deal["id"], number | null>();
     if (!coords) return map;
     for (const d of filtered) {
       const m = milesToNeighborhood(coords, d.neighborhood);
@@ -533,6 +605,53 @@ export default function DealsClient({ allDeals }: Props) {
     });
   }, [filtered, sortMode, distanceSortActive, distancesById, mode]);
 
+  // When map view is active, narrow the list to viewport
+  const displayed = useMemo(() => {
+    if (!mapView || !visibleMapIds) return sorted;
+    const idSet = new Set(visibleMapIds);
+    return sorted.filter((d) => idSet.has(d.id));
+  }, [sorted, mapView, visibleMapIds]);
+
+  function toggleTrait(t: string) {
+    setActiveTraits((cur) =>
+      cur.includes(t) ? cur.filter((x) => x !== t) : [...cur, t]
+    );
+  }
+
+  async function handleShare(deal: Deal) {
+    const text = shareText(deal, day);
+    const url = typeof window !== "undefined" ? window.location.href : "";
+    try {
+      if (typeof navigator !== "undefined" && "share" in navigator) {
+        await (navigator as Navigator & { share: (d: ShareData) => Promise<void> }).share({
+          title: deal.restaurant,
+          text,
+          url,
+        });
+        return;
+      }
+    } catch {
+      // user cancelled or failed; fall through to clipboard
+    }
+    try {
+      await navigator.clipboard.writeText(text);
+      setToast("Copied");
+    } catch {
+      setToast("Couldn't copy");
+    }
+  }
+
+  function handleIntakeSaved(list: Deal[]) {
+    setPersonalDeals(list);
+    setToast("Deal added");
+  }
+
+  function handleResetPersonalDeals() {
+    clearPersonalDeals();
+    setPersonalDeals([]);
+    setToast("Personal deals cleared");
+  }
+
   return (
     <>
       {/* Header */}
@@ -542,9 +661,35 @@ export default function DealsClient({ allDeals }: Props) {
             <span>Los Angeles · Volume 01</span>
             <span suppressHydrationWarning>{dateLabel || " "}</span>
           </div>
-          <h1 className="font-serif mt-3 text-5xl sm:text-6xl leading-[0.95] tracking-tight text-[var(--color-ink)]">
-            LA Eats
-          </h1>
+          <div className="mt-3 flex items-start justify-between gap-3">
+            <h1 className="font-serif text-5xl sm:text-6xl leading-[0.95] tracking-tight text-[var(--color-ink)]">
+              LA Eats
+            </h1>
+            <div className="flex items-center gap-2 pt-2 shrink-0">
+              <button
+                type="button"
+                onClick={() => setMapView((v) => !v)}
+                aria-pressed={mapView}
+                title="Toggle map view"
+                className={[
+                  "rounded-full border px-3 py-1.5 text-[11px] uppercase tracking-[0.18em] transition",
+                  mapView
+                    ? "bg-[var(--color-ink)] text-[var(--color-paper)] border-[var(--color-ink)]"
+                    : "border-[var(--color-rule)] text-[var(--color-ink-2)] hover:border-[var(--color-ink)]",
+                ].join(" ")}
+              >
+                Map
+              </button>
+              <button
+                type="button"
+                onClick={() => setIntakeOpen(true)}
+                title="Add deal from screenshot"
+                className="rounded-full bg-[var(--color-ink)] text-[var(--color-paper)] px-3 py-1.5 text-[11px] uppercase tracking-[0.18em] font-serif hover:bg-[var(--color-clay-dark)] transition"
+              >
+                + Add deal
+              </button>
+            </div>
+          </div>
           <p className="mt-2 text-[14px] sm:text-[15px] text-[var(--color-ink-2)] max-w-xl leading-relaxed">
             Today&rsquo;s best food deals, ranked by value, timing, distance, and
             how much effort they take.
@@ -572,13 +717,24 @@ export default function DealsClient({ allDeals }: Props) {
                   Set a daily macro target
                 </span>
               )}
-              <button
-                type="button"
-                onClick={() => setTargetsOpen(true)}
-                className="text-2xs uppercase tracking-[0.18em] text-[var(--color-clay)] underline decoration-[var(--color-clay)]/30 underline-offset-2 hover:decoration-[var(--color-clay)]"
-              >
-                {targets ? "Edit macros" : "Set macros"}
-              </button>
+              <div className="flex items-center gap-3">
+                {personalDeals.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={handleResetPersonalDeals}
+                    className="text-2xs uppercase tracking-[0.18em] text-[var(--color-muted)] underline decoration-[var(--color-rule)] underline-offset-2 hover:text-[var(--color-ink)] hover:decoration-[var(--color-ink)]"
+                  >
+                    Reset personal deals
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setTargetsOpen(true)}
+                  className="text-2xs uppercase tracking-[0.18em] text-[var(--color-clay)] underline decoration-[var(--color-clay)]/30 underline-offset-2 hover:decoration-[var(--color-clay)]"
+                >
+                  {targets ? "Edit macros" : "Set macros"}
+                </button>
+              </div>
             </div>
           )}
 
@@ -821,8 +977,57 @@ export default function DealsClient({ allDeals }: Props) {
               ))}
             </select>
           </div>
+
+          {/* Traits row */}
+          {allTraits.length > 0 && (
+            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar -mx-1 px-1">
+              {allTraits.map((t) => {
+                const active = activeTraits.includes(t);
+                return (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => toggleTrait(t)}
+                    aria-pressed={active}
+                    className={[
+                      "shrink-0 rounded-full px-2.5 py-1 text-[10px] uppercase tracking-[0.2em] transition border",
+                      active
+                        ? "bg-[var(--color-ink)] text-[var(--color-paper)] border-[var(--color-ink)]"
+                        : "border-[var(--color-rule)] text-[var(--color-muted)] hover:text-[var(--color-ink)] hover:border-[var(--color-ink)]",
+                    ].join(" ")}
+                  >
+                    {t}
+                  </button>
+                );
+              })}
+              {activeTraits.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setActiveTraits([])}
+                  className="ml-1 shrink-0 text-[10px] uppercase tracking-[0.2em] text-[var(--color-clay)] underline decoration-[var(--color-clay)]/30 underline-offset-2 hover:decoration-[var(--color-clay)]"
+                >
+                  Clear traits
+                </button>
+              )}
+            </div>
+          )}
         </div>
       </section>
+
+      {mapView && (
+        <section className="px-5 sm:px-8 lg:px-12 pt-5">
+          <div className="mx-auto max-w-3xl">
+            <DealsMap
+              deals={sorted}
+              userCoords={coords}
+              onVisibleChange={setVisibleMapIds}
+            />
+            <p className="mt-2 text-2xs uppercase tracking-[0.18em] text-[var(--color-muted)]">
+              List below filtered to map viewport
+            </p>
+          </div>
+        </section>
+      )}
 
       {/* Results */}
       <main className="px-5 sm:px-8 lg:px-12 py-6 sm:py-8 flex-1">
@@ -839,12 +1044,12 @@ export default function DealsClient({ allDeals }: Props) {
             </h2>
             <span className="text-2xs uppercase tracking-[0.18em] text-[var(--color-muted)] text-right">
               {fitsToday && targets
-                ? `${sorted.length} of ${baseFiltered.length} fit`
-                : `${sorted.length} ${sorted.length === 1 ? "spot" : "spots"}`}
+                ? `${displayed.length} of ${baseFiltered.length} fit`
+                : `${displayed.length} ${displayed.length === 1 ? "spot" : "spots"}`}
             </span>
           </div>
 
-          {sorted.length === 0 ? (
+          {displayed.length === 0 ? (
             <div className="py-20 text-center">
               <p className="font-serif text-2xl text-[var(--color-ink-2)]">
                 Nothing matches yet.
@@ -855,15 +1060,16 @@ export default function DealsClient({ allDeals }: Props) {
             </div>
           ) : (
             <ul className="divide-y divide-[var(--color-rule)]">
-              {sorted.map((d, idx) => (
+              {displayed.map((d, idx) => (
                 <DealCard
                   key={d.id}
                   deal={d}
                   miles={distancesById.get(d.id) ?? null}
                   showDistance={!!coords}
-                  isRecommended={sortMode === "best" && idx === 0}
+                  isRecommended={sortMode === "best" && idx === 0 && !mapView}
                   valueScore={bestValueScore(d, distancesById.get(d.id) ?? null, mode)}
                   onEat={handleEatDeal}
+                  onShare={handleShare}
                 />
               ))}
             </ul>
@@ -889,6 +1095,12 @@ export default function DealsClient({ allDeals }: Props) {
         onSave={handleSaveTargets}
         onResetToday={handleResetToday}
         consumed={consumed}
+      />
+
+      <ScreenshotIntake
+        open={intakeOpen}
+        onClose={() => setIntakeOpen(false)}
+        onSaved={handleIntakeSaved}
       />
 
       {toast && (
@@ -969,6 +1181,7 @@ function DealCard({
   isRecommended,
   valueScore,
   onEat,
+  onShare,
 }: {
   deal: Deal;
   miles: number | null;
@@ -976,14 +1189,18 @@ function DealCard({
   isRecommended: boolean;
   valueScore: number;
   onEat: (deal: Deal) => void;
+  onShare: (deal: Deal) => void;
 }) {
   const milesLabel =
     showDistance && miles != null ? `${miles.toFixed(1)} mi` : null;
-  const mapHref = mapsUrl(deal);
+  const showDirections = dealHasPhysicalAddress(deal);
+  const status = activeStatus(deal.timeWindow, deal.category);
   const expiresSoon =
-    deal.expiresAt && daysFromToday(deal.expiresAt) >= 0 && daysFromToday(deal.expiresAt) <= 7;
+    deal.expires && daysFromToday(deal.expires) >= 0 && daysFromToday(deal.expires) <= 7;
   const stale =
-    deal.verifiedAt && -daysFromToday(deal.verifiedAt) > 45;
+    deal.lastVerified && -daysFromToday(deal.lastVerified) > 45;
+  const isUnconfirmed =
+    deal.confidence === "ad-only" || deal.confidence === "unconfirmed";
 
   return (
     <li className="py-6 first:pt-2">
@@ -992,8 +1209,8 @@ function DealCard({
           <RestaurantAvatar restaurant={deal.restaurant} size={52} />
         </div>
         <div className="min-w-0">
-          {/* Recommended + One-time badges */}
           <div className="mb-2 flex flex-wrap items-center gap-2">
+            <ActiveLabel status={status} />
             {isRecommended && (
               <span className="inline-flex items-center gap-2 rounded-full border border-[var(--color-clay)] px-2.5 py-1 text-[10px] uppercase tracking-[0.22em] text-[var(--color-clay)]">
                 Best today · {valueScore}
@@ -1005,9 +1222,19 @@ function DealCard({
                 One day only · {formatOneTimeDate(deal.oneTimeDate)}
               </span>
             )}
-            {expiresSoon && deal.expiresAt && (
+            {expiresSoon && deal.expires && (
               <span className="inline-flex items-center rounded-full border border-[var(--color-clay)] px-2.5 py-1 text-[10px] uppercase tracking-[0.18em] text-[var(--color-clay)]">
-                ends {formatOneTimeDate(deal.expiresAt)}
+                ends {formatOneTimeDate(deal.expires)}
+              </span>
+            )}
+            {deal.isPersonal && (
+              <span className="inline-flex items-center rounded-full bg-[var(--color-paper-2)] border border-[var(--color-rule)] px-2 py-0.5 text-[10px] uppercase tracking-[0.18em] text-[var(--color-ink-2)]">
+                Personal
+              </span>
+            )}
+            {isUnconfirmed && (
+              <span className="inline-flex items-center rounded-full bg-[var(--color-paper-2)] border border-[var(--color-rule)] px-2 py-0.5 text-[10px] uppercase tracking-[0.18em] text-[var(--color-muted)]">
+                Unconfirmed
               </span>
             )}
           </div>
@@ -1023,6 +1250,19 @@ function DealCard({
                   <>
                     <span className="mx-1.5 text-[var(--color-rule)]">·</span>
                     <span className="text-[var(--color-ink-2)]">{milesLabel}</span>
+                  </>
+                )}
+                {showDirections && (
+                  <>
+                    <span className="mx-1.5 text-[var(--color-rule)]">·</span>
+                    <a
+                      href={mapsUrl(deal)}
+                      target="_blank"
+                      rel="noreferrer noopener"
+                      className="text-[var(--color-clay)] underline decoration-[var(--color-clay)]/30 underline-offset-2 hover:decoration-[var(--color-clay)]"
+                    >
+                      Directions
+                    </a>
                   </>
                 )}
               </p>
@@ -1054,21 +1294,19 @@ function DealCard({
           )}
 
           <div className="mt-3 flex flex-wrap items-center gap-1.5">
-            <Tag>{deal.cuisine}</Tag>
-            <Tag>{deal.category}</Tag>
-            {!deal.verified && (
+            {deal.cuisine && <Tag>{deal.cuisine}</Tag>}
+            {deal.category && <Tag>{deal.category}</Tag>}
+            {(deal.traits || []).map((t) => (
+              <TraitChip key={t}>{t}</TraitChip>
+            ))}
+            {!deal.verified && !deal.isPersonal && (
               <span className="inline-flex items-center rounded-full border border-[var(--color-rule)] px-2 py-0.5 text-[11px] uppercase tracking-[0.14em] text-[var(--color-muted)]">
                 unverified
               </span>
             )}
-            {deal.confidence === "check app" && (
+            {deal.lastVerified && (
               <span className="inline-flex items-center rounded-full border border-[var(--color-rule)] px-2 py-0.5 text-[11px] uppercase tracking-[0.14em] text-[var(--color-muted)]">
-                check app
-              </span>
-            )}
-            {deal.verifiedAt && (
-              <span className="inline-flex items-center rounded-full border border-[var(--color-rule)] px-2 py-0.5 text-[11px] uppercase tracking-[0.14em] text-[var(--color-muted)]">
-                {stale ? "stale" : "verified"} {formatOneTimeDate(deal.verifiedAt)}
+                {stale ? "stale" : "verified"} {formatOneTimeDate(deal.lastVerified)}
               </span>
             )}
           </div>
@@ -1089,6 +1327,14 @@ function DealCard({
                 I&rsquo;ll eat this
               </button>
             )}
+            <button
+              type="button"
+              onClick={() => onShare(deal)}
+              className="rounded-full border border-[var(--color-rule)] px-3 py-1 text-[11px] uppercase tracking-[0.16em] text-[var(--color-ink-2)] hover:border-[var(--color-ink)] hover:text-[var(--color-ink)] transition"
+              aria-label="Share this deal"
+            >
+              Share
+            </button>
             {deal.sourceUrl && deal.sourceUrl.startsWith("http") ? (
               <a
                 href={deal.sourceUrl}
@@ -1101,16 +1347,6 @@ function DealCard({
             ) : deal.sourceUrl ? (
               <span className="text-[var(--color-muted)]">{deal.sourceUrl}</span>
             ) : null}
-            {mapHref && (
-              <a
-                href={mapHref}
-                target="_blank"
-                rel="noreferrer noopener"
-                className="text-[var(--color-clay)] underline decoration-[var(--color-clay)]/30 underline-offset-2 hover:decoration-[var(--color-clay)]"
-              >
-                map
-              </a>
-            )}
           </div>
         </div>
       </article>
@@ -1125,4 +1361,39 @@ function Tag({ children }: { children: React.ReactNode }) {
       {children}
     </span>
   );
+}
+
+function TraitChip({ children }: { children: React.ReactNode }) {
+  if (!children) return null;
+  return (
+    <span className="inline-flex items-center rounded-full bg-[var(--color-paper-2)] px-2 py-0.5 text-[10px] uppercase tracking-[0.18em] text-[var(--color-muted)]">
+      {children}
+    </span>
+  );
+}
+
+function ActiveLabel({ status }: { status: ActiveStatus }) {
+  if (status.kind === "open") {
+    return (
+      <span className="inline-flex items-center gap-1.5 rounded-full bg-[#e4f1e2] px-2 py-0.5 text-[10px] uppercase tracking-[0.18em] text-[#2c5b2a]">
+        <span className="h-1.5 w-1.5 rounded-full bg-[#2c5b2a]" />
+        Open now
+      </span>
+    );
+  }
+  if (status.kind === "opens") {
+    return (
+      <span className="text-[11px] uppercase tracking-[0.16em] text-[var(--color-muted)]">
+        {status.label}
+      </span>
+    );
+  }
+  if (status.kind === "always") {
+    return (
+      <span className="text-[11px] uppercase tracking-[0.16em] text-[var(--color-muted)]">
+        Always on
+      </span>
+    );
+  }
+  return null;
 }
